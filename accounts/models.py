@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.utils import timezone
-from mptt.models import MPTTModel, TreeForeignKey
+
+
 
 # ---------------------------------
 # ۱. مدل‌های کاربران و آدرس‌ها
