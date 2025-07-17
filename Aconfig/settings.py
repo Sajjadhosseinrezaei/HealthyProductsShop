@@ -37,9 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'mptt',
 
 
-    'mqtt',
     # local apps 
     'accounts.apps.AccountsConfig',
     'home.apps.HomeConfig', 
@@ -136,10 +136,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 
-STATIC_URL = 'static'
+STATIC_URL = 'static/'
 
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
 
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+
+AUTH_USER_MODEL = 'accounts.CustomUser'
