@@ -1,0 +1,45 @@
+<footer class="bg-light text-center text-lg-start border-top shadow-sm mt-5">
+    <div class="container py-4">
+
+        <div class="row">
+
+            <!-- بخش درباره ما -->
+            <div class="col-md-4 mb-3">
+                <h5 class="fw-bold mb-3">درباره طبیعت‌کده</h5>
+                <p class="text-muted" style="text-align: justify;">
+                    طبیعت‌کده با هدف ارائه محصولات سالم و طبیعی شامل گلاب، عرقیات گیاهی، عسل خالص، خشکبار و ادویه‌جات، تلاش می‌کند تا طبیعت را به خانه‌های شما بیاورد.
+                </p>
+            </div>
+
+            <!-- لینک‌های مفید -->
+            <div class="col-md-4 mb-3">
+                <h5 class="fw-bold mb-3">لینک‌های مفید</h5>
+                <ul class="list-unstyled">
+                    <li><a href="{% url 'home:home' %}" class="text-decoration-none text-dark">صفحه اصلی</a></li>
+                    <li><a href="#" class="text-decoration-none text-dark">محصولات ما</a></li>
+                    <li><a href="#" class="text-decoration-none text-dark">وبلاگ</a></li>
+                    <li><a href="#" class="text-decoration-none text-dark">درباره ما</a></li>
+                    <li><a href="#" class="text-decoration-none text-dark">تماس با ما</a></li>
+                </ul>
+            </div>
+
+            <!-- شبکه‌های اجتماعی -->
+            <div class="col-md-4 mb-3">
+                <h5 class="fw-bold mb-3">ما را در شبکه‌های اجتماعی دنبال کنید</h5>
+                <div class="d-flex justify-content-center justify-content-md-start">
+                    <a href="#" class="text-dark mx-2"><i class="bi bi-instagram fs-4"></i></a>
+                    <a href="#" class="text-dark mx-2"><i class="bi bi-telegram fs-4"></i></a>
+                    <a href="#" class="text-dark mx-2"><i class="bi bi-whatsapp fs-4"></i></a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="bg-white text-muted py-3 border-top small">
+        <div class="container d-flex justify-content-between flex-wrap">
+            <div>© {{ now|date:"Y" }} تمامی حقوق محفوظ است.</div>
+            <div>طراحی و توسعه توسط <strong>طبیعت‌کده</strong></div>
+        </div>
+    </div>
+</footer>
