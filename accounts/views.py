@@ -52,6 +52,8 @@ class UserLoginView(View):
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request, user)
+                messages.success(request, "با موفقیت وارد شدید")
+                return redirect('home:home')
             else:
                 messages.error(request, 'اطلاعات وارد شده نادرست است.')
         return render(request, self.template_name, {'form': form})
