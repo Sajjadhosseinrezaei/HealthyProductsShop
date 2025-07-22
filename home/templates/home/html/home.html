@@ -4,42 +4,31 @@
 {% block title %}خانه - فروشگاه محصولات طبیعی{% endblock %}
 
 {% block content %}
-<section class="hero">
-    <div class="container hero-text">
-        <h1>تازگی و سلامت، از دل طبیعت</h1>
-        <p>بهترین و سالم‌ترین محصولات ارگانیک را مستقیم از تولیدکننده دریافت کنید.</p>
-        <a href="#" class="btn btn-primary">مشاهده محصولات</a>
-    </div>
-</section>
-
 <section class="featured-products">
     <div class="container">
         <h2>محصولات ویژه</h2>
         <div class="product-grid">
+
+            {% for product in products %}
             <div class="product-card">
-                <img src="https://via.placeholder.com/300x200.png?text=محصول+طبیعی" alt="نام محصول">
-                <h3>عسل طبیعی کوهستان</h3>
-                <p class="price">۲۵۰,۰۰۰ تومان</p>
-                <a href="#" class="btn btn-secondary">افزودن به سبد</a>
+                <a href="{% url 'home:product' product.id %}">
+                    {% if product.images.first %}
+                        <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}">
+                    {% else %}
+                        <img src="https://via.placeholder.com/300x200.png?text=محصول" alt="{{ product.name }}">
+                    {% endif %}
+                </a>
+
+                <h3>{{ product.name }}</h3>
+                <p class="price">{{ product.price }} تومان</p>
+
+                <div class="card-actions">
+                    <a href="#" class="btn btn-primary">افزودن به سبد</a>
+                    <a href="{% url 'home:product' product.id %}" class="btn btn-outline-secondary">مشاهده جزئیات</a>
+                </div>
             </div>
-            <div class="product-card">
-                <img src="https://via.placeholder.com/300x200.png?text=محصول+طبیعی" alt="نام محصول">
-                <h3>روغن زیتون فرابکر</h3>
-                <p class="price">۱۸۰,۰۰۰ تومان</p>
-                <a href="#" class="btn btn-secondary">افزودن به سبد</a>
-            </div>
-            <div class="product-card">
-                <img src="https://via.placeholder.com/300x200.png?text=محصول+طبیعی" alt="نام محصول">
-                <h3>دمنوش آرامش‌بخش</h3>
-                <p class="price">۹۵,۰۰۰ تومان</p>
-                <a href="#" class="btn btn-secondary">افزودن به سبد</a>
-            </div>
-             <div class="product-card">
-                <img src="https://via.placeholder.com/300x200.png?text=محصول+طبیعی" alt="نام محصول">
-                <h3>زعفران سرگل ممتاز</h3>
-                <p class="price">۳۲۰,۰۰۰ تومان</p>
-                <a href="#" class="btn btn-secondary">افزودن به سبد</a>
-            </div>
+            {% endfor %}
+            
         </div>
     </div>
 </section>

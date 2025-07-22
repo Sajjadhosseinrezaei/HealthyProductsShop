@@ -40,6 +40,7 @@ class Product(models.Model):
     
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ ایجاد")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="آخرین به‌روزرسانی")
+    is_featured = models.BooleanField(default=False, verbose_name="محصول ویژه")
     
     class Meta:
         verbose_name = "محصول"

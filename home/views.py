@@ -11,7 +11,8 @@ class HomeView(View):
 
 
     def get(self, request):
-        return render(request, self.template_name)
+        products = Product.objects.filter(is_featured=True).order_by('-created_at')[:4]
+        return render(request, self.template_name, {'products':products})
     
 
 class ProductListView(ListView):
