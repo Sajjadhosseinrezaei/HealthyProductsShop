@@ -146,3 +146,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 
 AUTH_USER_MODEL = 'accounts.CustomUser'
+
+# مسیر ذخیره فایل‌های مدیا
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'

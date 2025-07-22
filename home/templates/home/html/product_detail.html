@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="container product-detail-container">
+    <div class="product-grid">
+        <div class="product-gallery">
+            <div class="main-image-wrapper">
+                {% if product.images.first %}
+                    <img id="main-product-image" src="{{ product.images.first.image.url }}" alt="{{ product.images.first.alt_text|default:product.name }}">
+                {% else %}
+                    <img id="main-product-image" src="https://via.placeholder.com/600x600.png?text=بدون+تصویر" alt="{{ product.name }}">
+                {% endif %}
+            </div>
+            {% if product.images.all|length > 1 %}
+            <div class="thumbnail-strip">
+                {% for image in product.images.all %}
+                    <img class="thumbnail-image {% if forloop.first %}active{% endif %}" 
+                         src="{{ image.image.url }}" 
+                         alt="{{ image.alt_text|default:'تصویر کوچک محصول' }}"
+                         data-large-src="{{ image.image.url }}">
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="product-info">
+            {% if product.category %}
+                <a href="#" class="product-category-link">{{ product.category.name }}</a>
+            {% endif %}
+            
+            <h1 class="product-title">{{ product.name }}</h1>
+            
+            <div class="price-box">
+                {% if product.discount_price %}
+                    <span class="current-price">{{ product.discount_price|floatformat:0 }} تومان</span>
+                    <span class="original-price"><s>{{ product.price|floatformat:0 }} تومان</s></span>
+                {% else %}
+                    <span class="current-price">{{ product.price|floatformat:0 }} تومان</span>
+                {% endif %}
+            </div>
+            
+            <div class="stock-status">
+                {% if product.stock > 0 %}
+                    <p class="text-success"><i class="bi bi-patch-check-fill"></i> موجود در انبار</p>
+                {% else %}
+                    <p class="text-danger"><i class="bi bi-x-circle-fill"></i> ناموجود</p>
+                {% endif %}
+            </div>
+
+            <p class="product-short-description">
+                {{ product.description|truncatewords:40 }}
+            </p>
+
+            {% if product.stock > 0 %}
+            <form method="post" action="#"> {#  action به ویوی "افزودن به سبد" اشاره می‌کند #}
+                {% csrf_token %}
+                <div class="add-to-cart-form">
+                    <div class="quantity-selector">
+                        <label for="quantity-input">تعداد:</label>
+                        <input type="number" id="quantity-input" name="quantity" value="1" min="1" max="{{ product.stock }}" class="form-control">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-add-to-cart">
+                        <i class="bi bi-cart-plus-fill"></i> افزودن به سبد خرید
+                    </button>
+                </div>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="product-full-description">
+        <hr>
+        <h2>توضیحات کامل محصول</h2>
+        <div class="description-content">
+            {{ product.description|linebreaks }}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block styles %}
+    {# استایل‌های این صفحه که قبلا نوشتیم، بدون تغییر باقی می‌مانند #}
+{% endblock %}
+
+
+{% block scripts %}
+    {# کدهای جاوااسکریپت گالری تصاویر هم بدون تغییر باقی می‌مانند #}
+{% endblock %}
