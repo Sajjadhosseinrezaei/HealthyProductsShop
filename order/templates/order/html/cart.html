@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}سبد خرید شما{% endblock %}
+
+{% block content %}
+<div class="container page-container cart-page">
+    <h1 class="page-title">سبد خرید شما</h1>
+
+    {% if cart_items %}
+    <div class="cart-grid">
+        <div class="cart-items-list">
+            <div class="cart-header">
+                <div class="header-product">محصول</div>
+                <div class="header-price">قیمت</div>
+                <div class="header-quantity">تعداد</div>
+                <div class="header-subtotal">جمع کل</div>
+                <div class="header-action"></div>
+            </div>
+            {% for item in cart_items %}
+            <div class="cart-item">
+                <div class="item-product">
+                    <img src="{{ item.product.images.first.image.url }}" alt="{{ item.product.name }}">
+                    <div class="product-name-cat">
+                        <a href="#">{{ item.product.name }}</a>
+                        <small>{{ item.product.category.name }}</small>
+                    </div>
+                </div>
+                <div class="item-price">{{ item.price|floatformat:0 }} تومان</div>
+                <div class="item-quantity">{{ item.quantity }}</div>
+                <div class="item-subtotal">{{ item.subtotal|floatformat:0 }} تومان</div>
+                <div class="item-action">
+                    <a href="#" class="btn-remove" title="حذف محصول">
+                        <i class="bi bi-trash-fill"></i>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="cart-summary">
+            <h3>خلاصه سفارش</h3>
+            <div class="summary-row">
+                <span>جمع کل محصولات:</span>
+                <span>{{ item.total_price }}تومان</span>
+            </div>
+            <div class="summary-row">
+                <span>هزینه ارسال:</span>
+                <span>وابسته به آدرس</span>
+            </div>
+            <hr>
+            <div class="summary-total">
+                <span>مبلغ قابل پرداخت:</span>
+                <span>{{ total_price|floatformat:0 }} تومان</span>
+            </div>
+            <a href="#" class="btn btn-primary w-100 mt-3">ادامه فرآیند خرید</a>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center empty-cart">
+        <i class="bi bi-cart-x-fill"></i>
+        <h2>سبد خرید شما خالی است!</h2>
+        <p>برای مشاهده محصولات و افزودن به سبد خرید، به صفحه زیر بروید.</p>
+        <a href="{% url "home:products" %}" class="btn btn-primary">مشاهده محصولات</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .cart-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; }
+    .cart-header, .cart-item { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 0.5fr; align-items: center; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid #eee; }
+    .cart-header { font-weight: bold; color: var(--dark-gray); }
+    .item-product { display: flex; align-items: center; gap: 1rem; }
+    .item-product img { width: 80px; height: 80px; object-fit: cover; border-radius: var(--border-radius); }
+    .product-name-cat a { font-weight: bold; color: var(--text-color); }
+    .product-name-cat small { color: var(--dark-gray); }
+    .btn-remove { color: #e74c3c; font-size: 1.2rem; }
+    .cart-summary { background: var(--light-gray); padding: 2rem; border-radius: var(--border-radius); position: sticky; top: 120px;}
+    .cart-summary h3 { margin-bottom: 1.5rem; }
+    .summary-row, .summary-total { display: flex; justify-content: space-between; margin-bottom: 1rem; }
+    .summary-total { font-weight: bold; font-size: 1.2rem; }
+    .empty-cart i { font-size: 5rem; color: #ccc; }
+    @media (max-width: 992px) { .cart-grid { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}

@@ -55,7 +55,7 @@
             </p>
 
             {% if product.stock > 0 %}
-            <form method="post" action="#"> {#  action به ویوی "افزودن به سبد" اشاره می‌کند #}
+            <form method="post" action="{% url "order:cart_add" product.id%}"> {#  action به ویوی "افزودن به سبد" اشاره می‌کند #}
                 {% csrf_token %}
                 <div class="add-to-cart-form">
                     <div class="quantity-selector">

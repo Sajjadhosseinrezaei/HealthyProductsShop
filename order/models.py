@@ -13,6 +13,31 @@ class Cart(models.Model):
 
     def __str__(self):
         return f"سبد خرید کاربر {self.user.username}"
+    
+    def get_total_price(self):
+        total = sum(item.total_price() for item in self.items.all())
+        return total
+    
+
+    def add_to_cartitem(self, product, quantity=1):
+        cart_item, created = CartItem.objects.get_or_create(
+            cart=self,
+            product=product,
+            defaults={
+                'price': product.final_price,
+                'quantity': quantity
+            }
+        )
+
+        if not created:
+            cart_item.quantity += quantity
+            cart_item.price = product.final_price
+            cart_item.save()
+
+
+    def remove_empty_cart(self):
+        if not self.items.exists():
+            self.delete()
 
 class CartItem(models.Model):
     """
@@ -21,6 +46,8 @@ class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items', verbose_name="سبد خرید")
     product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name="محصول")
     quantity = models.PositiveIntegerField(default=1, verbose_name="تعداد")
+    price = models.DecimalField(max_digits=12, decimal_places=0, verbose_name='قیمت')
+
 
     class Meta:
         verbose_name = "آیتم سبد خرید"
@@ -34,6 +61,16 @@ class CartItem(models.Model):
     def total_price(self):
         """مجموع قیمت این آیتم (قیمت محصول * تعداد)."""
         return self.quantity * self.product.final_price
+    
+    def update_cart_quantity(self, quantity):
+        if quantity < 1:
+            raise ValueError("تعداد نمی‌تواند کمتر از 1 باشد")
+        if quantity <= self.product.stock:
+            self.quantity = quantity
+            self.save()
+        else:
+            raise ValueError("تعداد درخواستی بیشتر از موجودی است")
+
 
 class Order(models.Model):
     """

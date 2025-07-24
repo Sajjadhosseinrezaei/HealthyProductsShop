@@ -53,8 +53,13 @@ class Product(models.Model):
     @property
     def final_price(self):
         """قیمت نهایی محصول را با در نظر گرفتن تخفیف برمی‌گرداند."""
-        return self.discount_price if self.discount_price is not None else self.price
-
+        if self.discount_price is not None and self.discount_price > 0:
+            return self.discount_price
+        if self.price is not None:
+            return self.price
+        return 0  # مقدار پیش‌فرض ایمن
+    
+    
 class ProductImage(models.Model):
     """
     مدل برای مدیریت تصاویر متعدد برای هر محصول.
