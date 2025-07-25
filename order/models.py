@@ -15,7 +15,7 @@ class Cart(models.Model):
         return f"سبد خرید کاربر {self.user.username}"
     
     def get_total_price(self):
-        total = sum(item.total_price() for item in self.items.all())
+        total = sum(item.total_price for item in self.items.all())
         return total
     
 
@@ -70,6 +70,8 @@ class CartItem(models.Model):
             self.save()
         else:
             raise ValueError("تعداد درخواستی بیشتر از موجودی است")
+        
+
 
 
 class Order(models.Model):

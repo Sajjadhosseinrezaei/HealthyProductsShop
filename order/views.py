@@ -7,45 +7,50 @@ from django.contrib import messages
 
 
 
+from django.shortcuts import get_object_or_404, redirect
+from django.views import View
+from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
+from .models import Product, Cart, CartItem
+
 class AddToCart(LoginRequiredMixin, View):
-
-
     def post(self, request, product_id):
-        user = request.user
-        cart, created = Cart.objects.get_or_create(user=user)
+        # ۱. دریافت آبجکت‌های مورد نیاز
+        cart, _ = Cart.objects.get_or_create(user=request.user)
         product = get_object_or_404(Product, id=product_id)
-        quantity = request.POST.get('quantity', 1)
 
+        # ۲. اعتبارسنجی تعداد ورودی
         try:
-            quantity = int(quantity)
-            if quantity <= 0:
-                raise ValueError("تعداد باید بزرگتر از صفر باشد.")
+            quantity_to_add = int(request.POST.get('quantity', 1))
+            if quantity_to_add <= 0:
+                messages.error(request, "تعداد باید عددی مثبت باشد.")
+                # --- تغییر در اینجا ---
+                return redirect("home:product", id=product.id)
         except (ValueError, TypeError):
-            messages.error(request, "تعداد نامعتبر است.")
-            return redirect("home:product", product_id = product.id)
+            messages.error(request, "تعداد وارد شده نامعتبر است.")
+            # --- تغییر در اینجا ---
+            return redirect("home:product", id=product.id)
+            
+        # ۳. پیدا کردن آیتم موجود در سبد (در صورت وجود)
+        cart_item = cart.items.filter(product=product).first()
         
-        if created:
-            if quantity > product.stock:
-                messages.error(request, "موجودی کافی برای این محصول وجود ندارد.")
-                return redirect("home:product", product_id=product.id)
+        # ۴. محاسبه تعداد فعلی و تعداد نهایی
+        current_quantity = cart_item.quantity if cart_item else 0
+        final_quantity = current_quantity + quantity_to_add
 
-            cart.add_to_cartitem(product=product, quantity=quantity)
-            messages.success(request, f"{product.name} با موفقیت به سبد خرید اضافه شد.")
-            return redirect("home:product", product_id=product.id)
-
-        else:
-            cart_item = Cart.objects.get(user=request.user).items.filter(product=product).first()
-            if cart_item:
-                quantity_with_cart_quantity = cart_item.quantity + quantity
-                if quantity_with_cart_quantity > product.stock:
-                    messages.error(request, "تعداد وارد شده از تعداد موجود در سبد خرید بیشتر است.")
-                    return redirect("home:product", product_id=product.id)
-            else:
-                quantity_with_cart_quantity = quantity
-                
-            cart.add_to_cartitem(product=product, quantity=quantity)
-            messages.success(request, f"{product.name} با موفقیت به سبد خرید اضافه شد.")
-            return redirect("home:product", product.id)
+        # ۵. بررسی نهایی موجودی انبار (مهم‌ترین بخش)
+        if final_quantity > product.stock:
+            messages.error(request, f"موجودی محصول ({product.stock} عدد) برای این تعداد کافی نیست.")
+            # --- تغییر در اینجا ---
+            return redirect("home:product", id=product.id)
+            
+        # ۶. افزودن به سبد خرید (با استفاده از متد مدل)
+        cart.add_to_cartitem(product=product, quantity=quantity_to_add)
+        
+        messages.success(request, f'"{product.name}" با موفقیت به سبد شما اضافه شد.')
+        # --- تغییر در اینجا ---
+        return redirect("home:product", id=product.id)
+ 
 
         
 
@@ -73,3 +78,45 @@ class CartView(LoginRequiredMixin, View):
             'total_price': total_price,
         }
         return render(request, self.template_name, context)
+    
+
+class UpdateCartItemView(LoginRequiredMixin, View):
+    def post(self, request, item_id):
+        # ۱. پیدا کردن آیتم مورد نظر در سبد کاربر
+        cart_item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
+        
+        # ۲. دریافت تعداد جدید از فرم
+        try:
+            new_quantity = int(request.POST.get('quantity'))
+        except (ValueError, TypeError):
+            messages.error(request, "مقدار نامعتبر است.")
+            return redirect('order:cart_detail')
+
+        # ۳. اگر کاربر تعداد را صفر یا منفی وارد کرد، آیتم را حذف کن
+        if new_quantity <= 0:
+            cart_item.delete()
+            messages.success(request, "محصول از سبد شما حذف شد.")
+            return redirect('order:cart_detail')
+            
+        # ۴. بررسی موجودی انبار در برابر تعداد جدید
+        if new_quantity > cart_item.product.stock:
+            messages.error(request, f"موجودی محصول ({cart_item.product.stock} عدد) کافی نیست.")
+            return redirect('order:cart_detail')
+            
+        # ۵. به‌روزرسانی تعداد به مقدار جدید (منطق جایگزینی)
+        cart_item.quantity = new_quantity
+        cart_item.save()
+        
+        messages.success(request, "سبد خرید شما با موفقیت به‌روزرسانی شد.")
+        return redirect('order:cart_detail')
+    
+class RemoveCartItemView(LoginRequiredMixin, View):
+    def post(self, request, item_id):
+        # ۱. آیتم مورد نظر را با امنیت کامل پیدا کن (حتما برای کاربر فعلی باشد)
+        cart_item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
+
+        # ۲. از متد داخلی .delete() خود جنگو استفاده کن
+        cart_item.delete()
+
+        # ۳. کاربر را به صفحه سبد خرید بازگردان
+        return redirect('order:cart_detail')
