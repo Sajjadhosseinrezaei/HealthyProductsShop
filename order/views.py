@@ -58,6 +58,13 @@ class AddToCart(LoginRequiredMixin, View):
 class CartView(LoginRequiredMixin, View):
     template_name = 'order/html/cart.html'
 
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            messages.error(request, "برای مشاهده سبد خرید باید وارد شوید")
+            return redirect("home:home")
+        return super().dispatch(request, *args, **kwargs)
+    
+
     def get(self, request, *args, **kwargs):
         try:
             cart = request.user.cart

@@ -78,88 +78,138 @@
     {% endif %}
     </div>
 {% endblock %}
-
 {% block styles %}
 <style>
+    /* ========================================= */
+    /* پس‌زمینه گرادیانت برای افکت شیشه‌ای      */
+    /* ========================================= */
+    body {
+        /* این پس‌زمینه برای دیده شدن افکت شیشه ضروری است */
+        background: linear-gradient(120deg, #1dbda7ff 0%, #bac8e0 100%);
+        background-attachment: fixed;
+    }
     .page-container {
         padding-top: 3rem;
         padding-bottom: 3rem;
     }
+
+    /* ========================================= */
+    /* عناوین بالای صفحه              */
+    /* ========================================= */
     .page-title {
         text-align: center;
-        font-size: 2.5rem;
+        font-size: 2.8rem;
         font-weight: 700;
+        color: #ffffff; /* رنگ سفید برای خوانایی روی پس‌زمینه تیره */
+        text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        margin-bottom: 0.5rem;
     }
     .page-subtitle {
         text-align: center;
-        color: var(--dark-gray);
-        margin-bottom: 3rem;
+        color: #e0e0e0; /* رنگ سفید ملایم */
+        margin-bottom: 4rem;
+        font-size: 1.1rem;
     }
 
+    /* ========================================= */
+    /* چیدمان گرید محصولات            */
+    /* ========================================= */
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 2rem;
+    }
+
+    /* ========================================= */
+    /* استایل شیشه‌ای کارت محصول       */
+    /* ========================================= */
     .product-card {
+        /* بخش اصلی افکت شیشه */
+        background: rgba(7, 161, 76, 0.48);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        
+        border-radius: 16px;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
         display: flex;
         flex-direction: column;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
+    .product-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 40px 0 rgba(20, 27, 128, 0.25);
+    }
+    
     .card-image-wrapper {
         width: 100%;
-        height: 200px; /* Set a fixed height for all image containers */
-        overflow: hidden; /* Clip any part of the image that overflows */
+        height: 200px;
     }
     .card-image-wrapper img {
         width: 100%;
         height: 100%;
-        object-fit: contain; /* Make the image fit within the container, preserving aspect ratio */
-        transition: transform 0.3s ease-in-out; /* Optional: for hover effects */
+        object-fit: cover;
     }
+
     .card-content {
-        padding: 1rem 1.5rem 1.5rem;
+        padding: 1.25rem;
         display: flex;
         flex-direction: column;
         flex-grow: 1;
     }
     .card-content h3 {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #1a253c; /* رنگ تیره برای خوانایی روی پس‌زمینه روشن شیشه */
+        margin-bottom: 0.75rem;
         flex-grow: 1;
-        margin-bottom: 0.5rem; /* Adjust spacing */
     }
     .card-content .price {
-        margin-bottom: 1rem; /* Adjust spacing */
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #004d40;
+        margin-bottom: 1.25rem;
     }
-    .product-card:hover .card-image-wrapper img {
-        transform: scale(1.05); /* Optional: slight zoom on hover */
+    .card-content .btn {
+        background: linear-gradient(45deg, #2E7D32, #1b4d1e);
+        color: white;
+        border: none;
+        text-decoration: none;
+        padding: 0.6rem 1rem;
+        border-radius: 8px;
+        text-align: center;
+        font-weight: 500;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-    .card-actions {
-    display: flex;
-    justify-content: center; /* دکمه‌ها را در مرکز قرار می‌دهد */
-    gap: 10px; /* فاصله بین دو دکمه */
-    margin-top: auto; /* این خط دکمه‌ها را به پایین کارت می‌چسباند */
-    padding: 0 1rem 1rem;
-}
+    .card-content .btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
 
-/* استایل‌های قبلی شما برای دکمه‌ها */
-.btn {
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    text-decoration: none;
-    font-weight: 500;
-    text-align: center;
-    flex-grow: 1; /* باعث می‌شود هر دو دکمه عرض یکسانی داشته باشند */
-}
-
-.btn-primary {
-    background-color: #2E7D32;
-    color: white;
-    border: 1px solid #2E7D32;
-}
-
-.btn-outline-secondary {
-    background-color: transparent;
-    color: #2E7D32;
-    border: 1px solid #2E7D32;
-}
-
-.btn-outline-secondary:hover {
-    background-color: #2E7D32;
-    color: white;
-}
+    /* ========================================= */
+    /* استایل صفحه‌بندی (Pagination)   */
+    /* ========================================= */
+    .pagination .page-link {
+        background-color: rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #1a253c;
+        border-radius: 8px;
+        margin: 0 4px;
+        box-shadow: none;
+    }
+    .pagination .page-item.active .page-link {
+        background-color: #ffffff;
+        color: #1a253c;
+        border: none;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .pagination .page-item.disabled .page-link {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
 </style>
-{% endblock %}
+{% endblock styles %}

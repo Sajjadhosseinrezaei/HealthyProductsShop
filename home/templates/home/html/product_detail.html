@@ -80,13 +80,103 @@
     </div>
 </div>
 {% endblock %}
+{% block styles %} {# <--- 'styles' به 'style' تغییر کرد #}
+<style>
+    /* ============================================
+    مرحله ۱: ایجاد پس‌زمینه جذاب برای بدنه (body)
+    ============================================ */
+    body {
+        background: linear-gradient(120deg, #f6d365 0%, #fda085 100%);
+        background-attachment: fixed; /* برای ثابت ماندن گرادیانت هنگام اسکرول */
+    }
 
+    .product-detail-container {
+        padding-top: 3rem;
+        padding-bottom: 3rem;
+    }
 
-{% block styles %}
-    {# استایل‌های این صفحه که قبلا نوشتیم، بدون تغییر باقی می‌مانند #}
-{% endblock %}
+    /* ============================================
+    مرحله ۲: اعمال استایل اصلی گلس‌مورفیسم (شیشه‌ای)
+    ============================================ */
+    .product-info,
+    .product-full-description .description-content {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 1rem;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
+        padding: 2rem;
+        transition: all 0.3s ease;
+    }
 
+    .product-info:hover,
+    .product-full-description .description-content:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.3);
+    }
+    
+    /* ============================================
+    مرحله ۳: بهبود و هماهنگ‌سازی سایر عناصر
+    ============================================ */
+    .product-gallery .main-image-wrapper,
+    .product-gallery .thumbnail-image {
+        border-radius: 0.75rem;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
 
-{% block scripts %}
-    {# کدهای جاوااسکریپت گالری تصاویر هم بدون تغییر باقی می‌مانند #}
-{% endblock %}
+    .thumbnail-image.active {
+        border: 2px solid #fff;
+        box-shadow: 0 0 15px rgba(255, 255, 255, 0.7);
+    }
+
+    .product-title, .product-full-description h2 {
+        color: #1a1a1a;
+        font-weight: 700;
+        text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .product-category-link {
+        color: #333;
+        font-weight: 500;
+        background-color: rgba(255,255,255,0.3);
+        padding: 0.25rem 0.75rem;
+        border-radius: 1rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+    .product-category-link:hover {
+        background-color: rgba(255,255,255,0.6);
+        color: #000;
+    }
+
+    .current-price {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #0056b3;
+    }
+    .original-price {
+        color: #555;
+    }
+
+    .product-short-description, .description-content {
+        color: #2c2c2c;
+    }
+
+    .btn-add-to-cart {
+        background: linear-gradient(45deg, #007bff, #0056b3);
+        border: none;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .btn-add-to-cart:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+    }
+</style>
+{% endblock styles %} {# <--- 'styles' به 'style' تغییر کرد #}
