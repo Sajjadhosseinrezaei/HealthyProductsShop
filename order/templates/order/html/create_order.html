@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% block styles %}
+<style>
+/* استایل‌های هماهنگ با تمپلیت سبد خرید */
+.order-container {
+    background: var(--card-bg, #FFFFFF);
+    padding: 20px 30px;
+    border-radius: var(--border-radius, 8px);
+    box-shadow: var(--shadow, 0 2px 10px rgba(0,0,0,0.1));
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}
+
+.order-container h2, .order-container h3 {
+    text-align: right;
+}
+
+.table-auto th, .table-auto td {
+    text-align: right;
+    padding: 12px 15px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.table-auto th {
+    background-color: #e9ecef;
+    font-weight: 600;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.form-group input, .form-group select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 4px;
+    text-align: center;
+    display: inline-block;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 4px;
+    text-align: center;
+    display: inline-block;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="order-container">
+        <h2 class="text-2xl font-bold mb-4">ثبت سفارش</h2>
+        {% if messages %}
+            <div class="mb-4">
+                {% for message in messages %}
+                    <div class="p-4 {% if message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %} rounded">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <h3 class="text-lg font-semibold mb-2">محصولات سبد خرید</h3>
+        <table class="table-auto w-full border-collapse border mb-4">
+            <thead>
+                <tr class="bg-gray-200">
+                    <th class="border px-4 py-2">محصول</th>
+                    <th class="border px-4 py-2">تعداد</th>
+                    <th class="border px-4 py-2">قیمت واحد (تومان)</th>
+                    <th class="border px-4 py-2">قیمت کل (تومان)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in cart_items %}
+                    <tr>
+                        <td class="border px-4 py-2">{{ item.product.name }}</td>
+                        <td class="border px-4 py-2">{{ item.quantity }}</td>
+                        <td class="border px-4 py-2">{{ item.product.final_price }}</td>
+                        <td class="border px-4 py-2">{{ item.subtotal }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <p class="font-bold">مبلغ کل: {{ total_price }} تومان</p>
+
+        <form method="post" class="mt-4">
+            {% csrf_token %}
+            {% if addresses %}
+                <div class="form-group">
+                    <label for="address" class="block font-semibold">انتخاب آدرس:</label>
+                    <select name="address" id="address" class="w-full p-2 border rounded">
+                        {% for address in addresses %}
+                            <option value="{{ address.id }}" {% if address.is_default %}selected{% endif %}>
+                                {{ address.city }}, {{ address.street }}, {{ address.postal_code }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            {% endif %}
+            <div class="form-group">
+                <label class="block font-semibold mb-2">افزودن آدرس جدید:</label>
+                <div class="mb-2">
+                    <label for="city" class="block font-semibold">شهر:</label>
+                    <input type="text" name="city" id="city" class="w-full p-2 border rounded" {% if not addresses %}required{% endif %}>
+                </div>
+                <div class="mb-2">
+                    <label for="street" class="block font-semibold">خیابان:</label>
+                    <input type="text" name="street" id="street" class="w-full p-2 border rounded" {% if not addresses %}required{% endif %}>
+                </div>
+                <div class="mb-2">
+                    <label for="postal_code" class="block font-semibold">کد پستی:</label>
+                    <input type="text" name="postal_code" id="postal_code" class="w-full p-2 border rounded" {% if not addresses %}required{% endif %}>
+                </div>
+                <div class="mb-2">
+                    <label for="is_default" class="block font-semibold">
+                        <input type="checkbox" name="is_default" id="is_default">
+                        آدرس پیش‌فرض
+                    </label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="discount_code" class="block font-semibold">کد تخفیف (اختیاری):</label>
+                <input type="text" name="discount_code" id="discount_code" class="w-full p-2 border rounded">
+            </div>
+            <button type="submit" class="btn-primary">ثبت سفارش</button>
+            {% if addresses %}
+                <a href="{% url 'order:cart_detail' %}" class="btn-secondary">بازگشت به سبد خرید</a>
+            {% endif %}
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,17 +1,15 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Cart, CartItem, Product
+from .models import Cart, CartItem, Product, Order, OrderItem, Discount
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
+from django.views.generic import CreateView, ListView, DetailView, View
+from accounts.models import Address
+from django.db import transaction
+from django.utils import timezone
+from django.urls import reverse
 # Create your views here.
 
-
-
-from django.shortcuts import get_object_or_404, redirect
-from django.views import View
-from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin
-from .models import Product, Cart, CartItem
 
 class AddToCart(LoginRequiredMixin, View):
     def post(self, request, product_id):
@@ -127,3 +125,138 @@ class RemoveCartItemView(LoginRequiredMixin, View):
 
         # ۳. کاربر را به صفحه سبد خرید بازگردان
         return redirect('order:cart_detail')
+    
+
+
+class OrderListView(LoginRequiredMixin, ListView):
+
+    """
+    نمایش لیست سفارش های کاربر لاگین شده
+    """
+    model = Order
+    template_name = 'order/html/order_list.html'
+    context_object_name = 'orders'
+
+    def get_queryset(self):
+        return Order.objects.filter(user=self.request.user).order_by('-created_at')
+    
+
+class OrderDetailView(LoginRequiredMixin, DetailView):
+    
+    """
+    نمایش جزئیات یک سفارش خاص
+    """
+
+    model = Order
+    template_name = 'order/html/order_detail.html'
+    context_object_name = 'order'
+
+    def get_queryset(self):
+        return Order.objects.filter(user=self.request.user)
+    
+
+class CreateOrderView(LoginRequiredMixin, View):
+    """
+    ثبت سفارش از سبد خرید و افزودن آدرس جدید
+    """
+    template_name = 'order/html/create_order.html'
+
+    def get(self, request, *args, **kwargs):
+        cart = get_object_or_404(Cart, user=self.request.user)
+        if not cart.items.exists():
+            messages.error(self.request, "سبد خرید شما خالی است.")
+            return redirect('order:cart_detail')  # استفاده از namespace 'order' برای هماهنگی با ویوهای شما
+        addresses = Address.objects.filter(user=self.request.user)
+        cart_items = cart.items.select_related('product', 'product__category').prefetch_related('product__images')  # هماهنگی با CartView
+        total_price = cart.get_total_price()  # استفاده از متد get_total_price
+        for item in cart_items:
+            item.subtotal = item.total_price  # محاسبه subtotal مشابه CartView
+        return render(request, self.template_name, {
+            'cart': cart,
+            'addresses': addresses,
+            'cart_items': cart_items,
+            'total_price': total_price
+        })
+
+    def post(self, request, *args, **kwargs):
+        cart = get_object_or_404(Cart, user=self.request.user)
+        if not cart.items.exists():
+            messages.error(self.request, "سبد خرید شما خالی است.")
+            return redirect('order:cart_detail')
+
+        address_id = self.request.POST.get('address')
+        city = self.request.POST.get('city')
+        street = self.request.POST.get('street')
+        postal_code = self.request.POST.get('postal_code')
+        is_default = self.request.POST.get('is_default') == 'on'
+        discount_code = self.request.POST.get('discount_code')
+
+        # انتخاب یا ایجاد آدرس
+        if address_id:
+            address = get_object_or_404(Address, id=address_id, user=self.request.user)
+        elif city and street and postal_code:
+            address = Address.objects.create(
+                user=self.request.user,
+                city=city,
+                street=street,
+                postal_code=postal_code,
+                is_default=is_default
+            )
+        else:
+            messages.error(self.request, "لطفاً یک آدرس انتخاب کنید یا اطلاعات آدرس جدید را وارد کنید.")
+            return redirect('order:create_order')
+
+        # محاسبه مبلغ کل
+        total_amount = cart.get_total_price()
+
+        # بررسی کد تخفیف
+        discount = None
+        if discount_code:
+            try:
+                discount = Discount.objects.get(code=discount_code, is_active=True)
+                if not discount.is_valid():
+                    messages.error(self.request, "کد تخفیف معتبر نیست یا منقضی شده است.")
+                elif discount.one_time_use_per_user and discount.used_by.filter(id=self.request.user.id).exists():
+                    messages.error(self.request, "این کد تخفیف قبلاً توسط شما استفاده شده است.")
+                elif discount.min_purchase_amount and total_amount < discount.min_purchase_amount:
+                    messages.error(self.request, f"مبلغ سفارش باید حداقل {discount.min_purchase_amount} تومان باشد.")
+                else:
+                    if discount.discount_type == 'percent':
+                        discount_amount = total_amount * (discount.value / 100)
+                        total_amount -= discount_amount
+                    else:  # fixed
+                        total_amount -= discount.value
+                    if total_amount < 0:
+                        total_amount = 0
+            except Discount.DoesNotExist:
+                messages.error(self.request, "کد تخفیف نامعتبر است.")
+
+        # ایجاد سفارش با استفاده از تراکنش اتمیک
+        with transaction.atomic():
+            order = Order.objects.create(
+                user=self.request.user,
+                shipping_address=address,
+                total_amount=total_amount,
+                status='processing',
+                created_at=timezone.now()
+            )
+
+            # انتقال آیتم‌های سبد خرید به سفارش
+            for cart_item in cart.items.all():
+                OrderItem.objects.create(
+                    order=order,
+                    product=cart_item.product,
+                    quantity=cart_item.quantity,
+                    price_at_purchase=cart_item.product.final_price
+                )
+
+            # ثبت استفاده از کد تخفیف
+            if discount and discount.is_valid():
+                discount.used_by.add(self.request.user)
+
+            # خالی کردن سبد خرید
+            cart.items.all().delete()
+            cart.remove_empty_cart()
+
+        messages.success(self.request, f"سفارش شماره {order.id} با موفقیت ثبت شد.")
+        return redirect(reverse('order:order_detail', kwargs={'pk': order.id}))

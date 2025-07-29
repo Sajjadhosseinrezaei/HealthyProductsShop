@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% load order_tags %}  
+{% block content %}
+  <h2 class="text-2xl font-bold mb-4">جزئیات سفارش شماره {{ order.id }}</h2>
+  <div class="border p-4 rounded">
+    <p><strong>کاربر:</strong> {{ order.user.username|default:"کاربر حذف شده" }}</p>
+    <p><strong>آدرس ارسال:</strong> {{ order.shipping_address|default:"آدرس حذف شده" }}</p>
+    <p><strong>مبلغ کل:</strong> {{ order.total_amount }} تومان</p>
+    <p><strong>وضعیت:</strong> {{ order.get_status_display }}</p>
+    <p><strong>تاریخ سفارش:</strong> {{ order.created_at|date:"Y/m/d H:i" }}</p>
+  </div>
+
+  <h3 class="text-xl font-semibold mt-6 mb-2">آیتم‌های سفارش</h3>
+  <table class="table-auto w-full border-collapse border">
+    <thead>
+      <tr class="bg-gray-200">
+        <th class="border px-4 py-2">محصول</th>
+        <th class="border px-4 py-2">تعداد</th>
+        <th class="border px-4 py-2">قیمت واحد (تومان)</th>
+        <th class="border px-4 py-2">قیمت کل (تومان)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in order.items.all %}
+        <tr>
+          <td class="border px-4 py-2">{{ item.product.name|default:"محصول حذف شده" }}</td>
+          <td class="border px-4 py-2">{{ item.quantity }}</td>
+          <td class="border px-4 py-2">{{ item.price_at_purchase }}</td>
+          <td class="border px-4 py-2">{{ item.quantity|multiply:item.price_at_purchase }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

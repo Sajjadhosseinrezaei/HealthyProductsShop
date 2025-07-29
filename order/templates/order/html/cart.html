@@ -4,7 +4,7 @@
 <style>
 /* استایل‌های اختصاصی برای کانتینر سبد خرید */
 .cart-container {
-    background: var(--card-bg, #FFFFFF); /* استفاده از متغیرهای فایل اصلی */
+    background: var(--card-bg, #FFFFFF);
     padding: 20px 30px;
     border-radius: var(--border-radius, 8px);
     box-shadow: var(--shadow, 0 2px 10px rgba(0,0,0,0.1));
@@ -51,7 +51,7 @@
 
 /* استایل برای دکمه‌های خاص سبد خرید با استفاده از استایل پایه */
 .btn-update {
-    background-color: #007bff; /* آبی */
+    background-color: #007bff;
     color: white;
 }
 .btn-update:hover {
@@ -59,7 +59,7 @@
 }
 
 .btn-remove {
-    background-color: #dc3545; /* قرمز */
+    background-color: #dc3545;
     color: white;
 }
 .btn-remove:hover {
@@ -79,14 +79,22 @@
     color: #6c757d;
 }
 </style>
-{% endblock  %}
-
+{% endblock %}
 
 {% block content %}
-
 <div class="container">
-    <div class="content-card cart-wrapper">
+    <div class="content-card cart-container">
         <h1>🛒 سبد خرید شما</h1>
+
+        {% if messages %}
+            <div class="mb-4">
+                {% for message in messages %}
+                    <div class="p-4 {% if message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %} rounded">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
 
         {% if cart_items %}
             <table class="cart-table">
@@ -116,17 +124,17 @@
                         </td>
                         <td>{{ item.price }} تومان</td>
                         <td>
-                            <form action="{% url "order:cart_update" item.id%}" method="post" class="quantity-form">
+                            <form action="{% url 'order:cart_update' item.id %}" method="post" class="quantity-form">
                                 {% csrf_token %}
                                 <input type="number" name="quantity" value="{{ item.quantity }}" min="1" max="{{ item.product.stock }}">
-                                <button type="submit" class="btn btn-secondary btn-sm">آپدیت</button>
+                                <button type="submit" class="btn btn-update btn-sm">آپدیت</button>
                             </form>
                         </td>
                         <td>{{ item.total_price }} تومان</td>
                         <td>
-                            <form action="{% url "order:cart_remove" item.id %}" method="post">
+                            <form action="{% url 'order:cart_remove' item.id %}" method="post">
                                 {% csrf_token %}
-                                <button type="submit" class="btn btn-danger btn-sm">حذف</button>
+                                <button type="submit" class="btn btn-remove btn-sm">حذف</button>
                             </form>
                         </td>
                     </tr>
@@ -136,7 +144,7 @@
 
             <div class="cart-summary">
                 <h3>مجموع کل: {{ total_price }} تومان</h3>
-                <a href="" class="btn btn-primary">ادامه فرآیند خرید و پرداخت</a>
+                <a href="{% url 'order:create_order' %}" class="btn btn-primary">ادامه فرآیند خرید و پرداخت</a>
             </div>
 
         {% else %}
@@ -148,4 +156,3 @@
     </div>
 </div>
 {% endblock content %}
-

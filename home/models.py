@@ -74,3 +74,6 @@ class ProductImage(models.Model):
 
     def __str__(self):
         return f"تصویر برای محصول {self.product.name}"
+    
+
+    

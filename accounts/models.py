@@ -21,23 +21,31 @@ class CustomUser(AbstractUser):
     def __str__(self):
         return self.username
 
+
+
 class Address(models.Model):
     """
-    مدل برای نگهداری آدرس‌های پستی کاربران.
+    مدل برای ذخیره اطلاعات آدرس کاربران.
     """
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='addresses', verbose_name="کاربر")
-    title = models.CharField(max_length=100, verbose_name="عنوان آدرس (مثلاً خانه)")
-    recipient_name = models.CharField(max_length=200, verbose_name="نام و نام خانوادگی گیرنده")
-    phone_number = models.CharField(max_length=11, verbose_name="شماره تماس")
-    province = models.CharField(max_length=100, verbose_name="استان")
     city = models.CharField(max_length=100, verbose_name="شهر")
-    street = models.TextField(verbose_name="خیابان/کوچه و پلاک")
+    street = models.CharField(max_length=255, verbose_name="خیابان")
     postal_code = models.CharField(max_length=10, verbose_name="کد پستی")
-    details = models.TextField(blank=True, null=True, verbose_name="توضیحات بیشتر")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ ایجاد")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="آخرین به‌روزرسانی")
+    is_default = models.BooleanField(default=False, verbose_name="آدرس پیش‌فرض")
 
     class Meta:
         verbose_name = "آدرس"
         verbose_name_plural = "آدرس‌ها"
 
     def __str__(self):
-        return f"آدرس '{self.title}' برای کاربر {self.user.username}"
+        return f"{self.city}, {self.street}, {self.postal_code} ({self.user.username})"
+
+    def save(self, *args, **kwargs):
+        """
+        اطمینان از اینکه فقط یک آدرس به عنوان پیش‌فرض برای هر کاربر تنظیم شده است.
+        """
+        if self.is_default:
+            Address.objects.filter(user=self.user, is_default=True).exclude(id=self.id).update(is_default=False)
+        super().save(*args, **kwargs)

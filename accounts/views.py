@@ -3,8 +3,10 @@ from .forms import UserCreationForm, UserLoginForm
 from django.views import View
 from django.contrib import messages
 from django.contrib.auth import login, authenticate, logout
-from .models import CustomUser
+from .models import CustomUser, Address
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.urls import reverse_lazy
+from django.views.generic import CreateView
 # Create your views here.
 
 class CreateUserView(View):
@@ -64,3 +66,30 @@ class UserLogoutView(LoginRequiredMixin, View):
         logout(request)
         messages.success(request, 'با موفقیت خارج شدید.')
         return redirect('home:home')
+    
+
+
+class AddressCreateView(LoginRequiredMixin, CreateView):
+    model = Address
+    fields = ['city', 'street', 'postal_code', 'is_default']
+    template_name = 'accounts/html/address_form.html'
+    success_url = reverse_lazy('order:cart_detail')
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        messages.success(self.request, "آدرس با موفقیت اضافه شد.")
+        return super().form_valid(form)
+    
+class ProfileView(LoginRequiredMixin, View):
+    """
+    نمایش صفحه پروفایل کاربر با اطلاعات کاربری و آدرس‌ها
+    """
+    template_name = 'accounts/html/profile.html'
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        addresses = Address.objects.filter(user=user).order_by('-is_default', 'created_at')
+        return render(request, self.template_name, {
+            'user': user,
+            'addresses': addresses,
+        })

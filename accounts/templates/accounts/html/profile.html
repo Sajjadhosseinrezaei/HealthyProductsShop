@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mx-auto p-6">
+    <h2 class="text-3xl font-bold mb-6 text-right">پروفایل کاربری</h2>
+
+    <div class="bg-white shadow-md rounded-lg p-6 mb-6">
+        <h3 class="text-xl font-semibold mb-4 text-right">اطلاعات کاربری</h3>
+        <p><strong>نام کاربری:</strong> {{ user.username }}</p>
+        <p><strong>ایمیل:</strong> {{ user.email|default:"ایمیل تنظیم نشده" }}</p>
+        <p><strong>نقش:</strong> {{ user.get_role_display }}</p>
+    </div>
+
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <h3 class="text-xl font-semibold mb-4 text-right">آدرس‌ها</h3>
+        {% if addresses %}
+            {% for address in addresses %}
+                <div class="border p-4 mb-4 rounded-lg">
+                    <p><strong>شهر:</strong> {{ address.city }}</p>
+                    <p><strong>خیابان:</strong> {{ address.street }}</p>
+                    <p><strong>کد پستی:</strong> {{ address.postal_code }}</p>
+                    <p><strong>تاریخ ایجاد:</strong> {{ address.created_at|date:"Y/m/d" }}</p>
+                    <p><strong>پیش‌فرض:</strong> {% if address.is_default %}بله{% else %}خیر{% endif %}</p>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-gray-600">شما هیچ آدرسی ثبت نکرده‌اید.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

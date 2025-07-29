@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block content %}
+  <div class="container">
+    <h2 class="text-2xl font-bold mb-4">افزودن آدرس جدید</h2>
+    {% if messages %}
+      <div class="mb-4">
+        {% for message in messages %}
+          <div class="p-4 {% if message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %} rounded">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+    <form method="post" class="border p-4 rounded">
+      {% csrf_token %}
+      <div class="mb-4">
+        <label for="id_city" class="block font-semibold">شهر:</label>
+        {{ form.city }}
+      </div>
+      <div class="mb-4">
+        <label for="id_street" class="block font-semibold">خیابان:</label>
+        {{ form.street }}
+      </div>
+      <div class="mb-4">
+        <label for="id_postal_code" class="block font-semibold">کد پستی:</label>
+        {{ form.postal_code }}
+      </div>
+      <div class="mb-4">
+        <label for="id_is_default" class="block font-semibold">
+          <input type="checkbox" name="is_default" id="id_is_default" {% if form.is_default.value %}checked{% endif %}>
+          آدرس پیش‌فرض
+        </label>
+      </div>
+      <button type="submit" class="btn btn-primary">ذخیره آدرس</button>
+    </form>
+  </div>
+{% endblock %}

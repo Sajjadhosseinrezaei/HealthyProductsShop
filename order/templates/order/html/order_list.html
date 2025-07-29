@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block content %}
+  <h2 class="text-2xl font-bold mb-4">سفارش‌های شما</h2>
+  {% if orders %}
+    <table class="table-auto w-full border-collapse border">
+      <thead>
+        <tr class="bg-gray-200">
+          <th class="border px-4 py-2">شماره سفارش</th>
+          <th class="border px-4 py-2">تاریخ سفارش</th>
+          <th class="border px-4 py-2">مبلغ کل (تومان)</th>
+          <th class="border px-4 py-2">وضعیت</th>
+          <th class="border px-4 py-2">جزئیات</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for order in orders %}
+          <tr>
+            <td class="border px-4 py-2">{{ order.id }}</td>
+            <td class="border px-4 py-2">{{ order.created_at|date:"Y/m/d H:i" }}</td>
+            <td class="border px-4 py-2">{{ order.total_amount }}</td>
+            <td class="border px-4 py-2">{{ order.get_status_display }}</td>
+            <td class="border px-4 py-2">
+              <a href="{% url 'order:order_detail' order.id %}" class="text-blue-500 hover:underline">مشاهده</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>شما هنوز سفارشی ثبت نکرده‌اید.</p>
+  {% endif %}
+{% endblock %}
