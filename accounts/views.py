@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .forms import UserCreationForm, UserLoginForm
 from django.views import View
 from django.contrib import messages
@@ -7,6 +7,7 @@ from .models import CustomUser, Address
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
+from order.models import Cart, Order, CartItem
 # Create your views here.
 
 class CreateUserView(View):
@@ -82,14 +83,34 @@ class AddressCreateView(LoginRequiredMixin, CreateView):
     
 class ProfileView(LoginRequiredMixin, View):
     """
-    نمایش صفحه پروفایل کاربر با اطلاعات کاربری و آدرس‌ها
+    نمایش صفحه پروفایل کاربر با اطلاعات کاربری، آدرس‌ها، سفارش‌ها و سبد خرید
     """
     template_name = 'accounts/html/profile.html'
 
     def get(self, request, *args, **kwargs):
         user = request.user
         addresses = Address.objects.filter(user=user).order_by('-is_default', 'created_at')
+        orders = Order.objects.filter(user=user).order_by('-created_at')  # لیست سفارش‌ها
+        cart, created = Cart.objects.get_or_create(user=user)  # سبد خرید کاربر
+        cart_items = CartItem.objects.filter(cart=cart)  # آیتم‌های سبد خرید
         return render(request, self.template_name, {
             'user': user,
             'addresses': addresses,
+            'orders': orders,
+            'cart': cart,
+            'cart_items': cart_items,
         })
+
+    
+class AddressDeleteView(LoginRequiredMixin, View):
+    """
+    حذف آدرس کاربر
+    """
+    def post(self, request, address_id):
+        address = get_object_or_404(Address, id=address_id, user=request.user)
+        if address.is_default:
+            messages.error(request, "نمی‌توانید آدرس پیش‌فرض را حذف کنید.")
+        else:
+            address.delete()
+            messages.success(request, "آدرس با موفقیت حذف شد.")
+        return redirect('accounts:profile')

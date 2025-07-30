@@ -10,20 +10,74 @@
         <p><strong>نقش:</strong> {{ user.get_role_display }}</p>
     </div>
 
-    <div class="bg-white shadow-md rounded-lg p-6">
+    <div class="bg-white shadow-md rounded-lg p-6 mb-6">
         <h3 class="text-xl font-semibold mb-4 text-right">آدرس‌ها</h3>
+        <a href="{% url 'accounts:address_add' %}" class="btn btn-primary mb-4">افزودن آدرس جدید</a>
         {% if addresses %}
             {% for address in addresses %}
-                <div class="border p-4 mb-4 rounded-lg">
-                    <p><strong>شهر:</strong> {{ address.city }}</p>
-                    <p><strong>خیابان:</strong> {{ address.street }}</p>
-                    <p><strong>کد پستی:</strong> {{ address.postal_code }}</p>
-                    <p><strong>تاریخ ایجاد:</strong> {{ address.created_at|date:"Y/m/d" }}</p>
-                    <p><strong>پیش‌فرض:</strong> {% if address.is_default %}بله{% else %}خیر{% endif %}</p>
+                <div class="border p-4 mb-4 rounded-lg flex justify-between items-center">
+                    <div>
+                        <p><strong>شهر:</strong> {{ address.city }}</p>
+                        <p><strong>خیابان:</strong> {{ address.street }}</p>
+                        <p><strong>کد پستی:</strong> {{ address.postal_code }}</p>
+                        <p><strong>تاریخ ایجاد:</strong> {{ address.created_at|date:"Y/m/d" }}</p>
+                        <p><strong>پیش‌فرض:</strong> {% if address.is_default %}بله{% else %}خیر{% endif %}</p>
+                    </div>
+                    {% if not address.is_default %}
+                        <form action="{% url 'accounts:address_delete' address.id %}" method="post" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700 transition-colors duration-200">
+                                حذف
+                            </button>
+                        </form>
+                    {% endif %}
                 </div>
             {% endfor %}
         {% else %}
             <p class="text-gray-600">شما هیچ آدرسی ثبت نکرده‌اید.</p>
+        {% endif %}
+    </div>
+
+    <div class="bg-white shadow-md rounded-lg p-6 mb-6">
+        <h3 class="text-xl font-semibold mb-4 text-right">سفارش‌ها</h3>
+        {% if orders %}
+            {% for order in orders %}
+                <div class="border p-4 mb-4 rounded-lg">
+                    <p><strong>شماره سفارش:</strong> {{ order.id }}</p>
+                    <p><strong>مبلغ کل:</strong> {{ order.total_amount }} تومان</p>
+                    <p><strong>وضعیت:</strong> {{ order.get_status_display }}</p>
+                    <p><strong>تاریخ:</strong> {{ order.created_at|date:"Y/m/d H:i" }}</p>
+                    <a href="{% url 'order:order_detail' order.id %}" class="btn btn-secondary mt-2">جزئیات</a>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-gray-600">شما هیچ سفارشی ثبت نکرده‌اید.</p>
+        {% endif %}
+    </div>
+
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <h3 class="text-xl font-semibold mb-4 text-right">سبد خرید</h3>
+        {% if cart_items %}
+            {% for item in cart_items %}
+                <div class="border p-4 mb-4 rounded-lg flex justify-between items-center">
+                    <div>
+                        <p><strong>محصول:</strong> {{ item.product.name }}</p>
+                        <p><strong>تعداد:</strong> {{ item.quantity }}</p>
+                        <p><strong>قیمت کل:</strong> {{ item.total_price }} تومان</p>
+                    </div>
+                    <form action="{% url 'order:cart_remove' item.id %}" method="post" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700 transition-colors duration-200">
+                            حذف
+                        </button>
+                    </form>
+                </div>
+            {% empty %}
+                <p class="text-gray-600">سبد خرید شما خالی است.</p>
+            {% endfor %}
+            <a href="{% url 'order:cart_detail' %}" class="btn btn-primary mt-4">مشاهده سبد خرید</a>
+        {% else %}
+            <p class="text-gray-600">سبد خرید شما خالی است.</p>
         {% endif %}
     </div>
 </div>

@@ -79,6 +79,7 @@ class Order(models.Model):
     یک سفارش ثبت‌شده توسط کاربر.
     """
     STATUS_CHOICES = (
+        ('pending_payment', 'در انتظار پرداخت'),
         ('processing', 'در حال پردازش'),
         ('shipped', 'ارسال شده'),
         ('delivered', 'تحویل شده'),
@@ -88,7 +89,7 @@ class Order(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, related_name='orders', verbose_name="کاربر")
     shipping_address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True, verbose_name="آدرس ارسال")
     total_amount = models.DecimalField(max_digits=12, decimal_places=0, verbose_name="مبلغ کل سفارش")
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='processing', verbose_name="وضعیت سفارش")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending_payment', verbose_name="وضعیت سفارش")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ سفارش")
     payment_tracking_code = models.CharField(max_length=20, blank=True, null=True, verbose_name="کد پیگیری پرداخت")
 

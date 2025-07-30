@@ -47,7 +47,7 @@ class AddToCart(LoginRequiredMixin, View):
         
         messages.success(request, f'"{product.name}" با موفقیت به سبد شما اضافه شد.')
         # --- تغییر در اینجا ---
-        return redirect("home:product", id=product.id)
+        return redirect("order:cart_detail")
  
 
         
@@ -237,7 +237,7 @@ class CreateOrderView(LoginRequiredMixin, View):
                 user=self.request.user,
                 shipping_address=address,
                 total_amount=total_amount,
-                status='processing',
+                status='pending_payment',
                 created_at=timezone.now()
             )
 

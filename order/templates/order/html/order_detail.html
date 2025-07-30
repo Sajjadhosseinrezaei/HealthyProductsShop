@@ -74,7 +74,7 @@
         
         {# این دکمه فقط زمانی نمایش داده می‌شود که وضعیت سفارش 'P' (در انتظار پرداخت) باشد #}
         {# شما باید 'P' را با مقدار واقعی وضعیت در مدل خود جایگزین کنید #}
-        {% if order.status == 'processing' %}
+        {% if order.status == 'pending_payment' %}
             <div class="payment-action">
                 <a href="{% url "order:payment" order.id%}" class="btn btn-pay">
                     <i class="fas fa-credit-card"></i>
