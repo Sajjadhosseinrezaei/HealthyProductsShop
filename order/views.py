@@ -304,7 +304,7 @@ class PaymentView(LoginRequiredMixin, View):
                 })
             # شبیه‌سازی تأیید (در واقعیت باید با بانک یا سیستم پرداخت چک شود)
             order.payment_tracking_code = tracking_code
-            order.status = 'paid'
+            order.status = 'processing'
             order.save()
             messages.success(request, f"پرداخت سفارش شماره {order.id} با موفقیت تأیید شد.")
             return redirect('order:order_detail', pk=order_id)
