@@ -90,6 +90,7 @@ class Order(models.Model):
     total_amount = models.DecimalField(max_digits=12, decimal_places=0, verbose_name="مبلغ کل سفارش")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='processing', verbose_name="وضعیت سفارش")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ سفارش")
+    payment_tracking_code = models.CharField(max_length=20, blank=True, null=True, verbose_name="کد پیگیری پرداخت")
 
     class Meta:
         verbose_name = "سفارش"
@@ -152,3 +153,24 @@ class Discount(models.Model):
         """بررسی می‌کند آیا کد تخفیف در حال حاضر معتبر است یا خیر."""
         now = timezone.now()
         return self.is_active and self.start_date <= now <= self.end_date
+
+
+
+
+
+class PaymentCard(models.Model):
+    """
+    مدل برای ذخیره اطلاعات کارت پرداخت که توسط ادمین تنظیم می‌شود.
+    """
+    card_number = models.CharField(max_length=16, verbose_name="شماره کارت")
+    card_holder = models.CharField(max_length=100, verbose_name="نام صاحب کارت")
+    bank_name = models.CharField(max_length=100, verbose_name="نام بانک", blank=True)
+    is_active = models.BooleanField(default=True, verbose_name="فعال")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ ایجاد")
+
+    class Meta:
+        verbose_name = "کارت پرداخت"
+        verbose_name_plural = "کارت‌های پرداخت"
+
+    def __str__(self):
+        return f"{self.card_holder} - {self.card_number[:4]}****{self.card_number[-4:]}"

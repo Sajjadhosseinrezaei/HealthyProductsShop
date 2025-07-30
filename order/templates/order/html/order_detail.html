@@ -1,34 +1,261 @@
 {% extends 'base.html' %}
-{% load order_tags %}  
-{% block content %}
-  <h2 class="text-2xl font-bold mb-4">جزئیات سفارش شماره {{ order.id }}</h2>
-  <div class="border p-4 rounded">
-    <p><strong>کاربر:</strong> {{ order.user.username|default:"کاربر حذف شده" }}</p>
-    <p><strong>آدرس ارسال:</strong> {{ order.shipping_address|default:"آدرس حذف شده" }}</p>
-    <p><strong>مبلغ کل:</strong> {{ order.total_amount }} تومان</p>
-    <p><strong>وضعیت:</strong> {{ order.get_status_display }}</p>
-    <p><strong>تاریخ سفارش:</strong> {{ order.created_at|date:"Y/m/d H:i" }}</p>
-  </div>
+{% load order_tags %}
 
-  <h3 class="text-xl font-semibold mt-6 mb-2">آیتم‌های سفارش</h3>
-  <table class="table-auto w-full border-collapse border">
-    <thead>
-      <tr class="bg-gray-200">
-        <th class="border px-4 py-2">محصول</th>
-        <th class="border px-4 py-2">تعداد</th>
-        <th class="border px-4 py-2">قیمت واحد (تومان)</th>
-        <th class="border px-4 py-2">قیمت کل (تومان)</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for item in order.items.all %}
-        <tr>
-          <td class="border px-4 py-2">{{ item.product.name|default:"محصول حذف شده" }}</td>
-          <td class="border px-4 py-2">{{ item.quantity }}</td>
-          <td class="border px-4 py-2">{{ item.price_at_purchase }}</td>
-          <td class="border px-4 py-2">{{ item.quantity|multiply:item.price_at_purchase }}</td>
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+{% block title %}جزئیات سفارش {{ order.id }}{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <h1 class="page-title">جزئیات سفارش شماره #{{ order.id }}</h1>
+        <p class="page-subtitle">سفارش ثبت شده در تاریخ {{ order.created_at|date:"d F Y" }}</p>
+    </div>
+
+    <div class="info-grid">
+        <div class="info-card">
+            <h3 class="card-title">اطلاعات سفارش</h3>
+            <div class="info-item">
+                <span>شناسه کاربر:</span>
+                <strong>{{ order.user.username|default:"کاربر حذف شده" }}</strong>
+            </div>
+            <div class="info-item">
+                <span>تاریخ ثبت:</span>
+                <strong>{{ order.created_at|date:"Y/m/d H:i" }}</strong>
+            </div>
+            <div class="info-item">
+                <span>وضعیت:</span>
+                <span class="status-badge status-{{ order.status|lower }}">{{ order.get_status_display }}</span>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <h3 class="card-title">آدرس ارسال</h3>
+            <div class="info-item">
+                <span>آدرس:</span>
+                <strong class="shipping-address">{{ order.shipping_address|default:"آدرس حذف شده"|linebreaksbr }}</strong>
+            </div>
+             <div class="info-item">
+                <span>کد پستی:</span>
+                <strong>{{ order.shipping_address.postal_code|default:"-" }}</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="items-card">
+        <h3 class="card-title">محصولات سفارش</h3>
+        <div class="table-responsive">
+            <table class="order-items-table">
+                <thead>
+                    <tr>
+                        <th>محصول</th>
+                        <th>تعداد</th>
+                        <th>قیمت واحد</th>
+                        <th>قیمت کل</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in order.items.all %}
+                    <tr>
+                        <td data-label="محصول">{{ item.product.name|default:"محصول حذف شده" }}</td>
+                        <td data-label="تعداد">{{ item.quantity }}</td>
+                        <td data-label="قیمت واحد">{{ item.price_at_purchase|floatformat:0 }} تومان</td>
+                        <td data-label="قیمت کل">{{ item.quantity|multiply:item.price_at_purchase|floatformat:0 }} تومان</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="summary-footer">
+        <div class="total-amount">
+            <span class="total-label">مبلغ کل قابل پرداخت:</span>
+            <span class="total-price">{{ order.total_amount|floatformat:0 }} تومان</span>
+        </div>
+        
+        {# این دکمه فقط زمانی نمایش داده می‌شود که وضعیت سفارش 'P' (در انتظار پرداخت) باشد #}
+        {# شما باید 'P' را با مقدار واقعی وضعیت در مدل خود جایگزین کنید #}
+        {% if order.status == 'processing' %}
+            <div class="payment-action">
+                <a href="{% url "order:payment" order.id%}" class="btn btn-pay">
+                    <i class="fas fa-credit-card"></i>
+                    پرداخت سفارش
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
 {% endblock %}
+
+
+{% block styles %}
+<style>
+    .page-container {
+        max-width: 1200px;
+        margin: auto;
+        padding: 2rem 1rem 4rem;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    .page-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #1a253c;
+    }
+    .page-subtitle {
+        font-size: 1.1rem;
+        color: #6c757d;
+        margin-top: 0.5rem;
+    }
+
+    /* گرید اطلاعات */
+    .info-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        margin-bottom: 2.5rem;
+    }
+    @media (min-width: 768px) {
+        .info-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    /* کارت‌های اطلاعات */
+    .info-card, .items-card {
+        background-color: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+    .card-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1a253c;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        font-size: 0.95rem;
+    }
+    .info-item span { color: #4b5563; }
+    .info-item strong { color: #111827; font-weight: 600; }
+    .shipping-address { text-align: left; }
+    
+    /* نشان وضعیت سفارش */
+    .status-badge {
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+    .status-badge.status-p { /* Pending */
+        background-color: #fffbeb;
+        color: #b45309;
+    }
+    .status-badge.status-c { /* Completed */
+        background-color: #ecfdf5;
+        color: #065f46;
+    }
+    .status-badge.status-s { /* Shipped */
+        background-color: #eff6ff;
+        color: #1d4ed8;
+    }
+    .status-badge.status-x { /* Cancelled */
+        background-color: #fee2e2;
+        color: #991b1b;
+    }
+
+    /* جدول آیتم ها */
+    .table-responsive { overflow-x: auto; }
+    .order-items-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.95rem;
+    }
+    .order-items-table thead {
+        background-color: #f9fafb;
+    }
+    .order-items-table th {
+        padding: 0.75rem 1rem;
+        text-align: right;
+        font-weight: 600;
+        color: #374151;
+        border-bottom: 2px solid #e5e7eb;
+    }
+    .order-items-table td {
+        padding: 1rem;
+        border-bottom: 1px solid #e5e7eb;
+        color: #1f2937;
+        vertical-align: middle;
+    }
+    .order-items-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+    .order-items-table tbody tr:nth-child(even) {
+        background-color: #f9fafb;
+    }
+
+    /* بخش جمع بندی و پرداخت */
+    .summary-footer {
+        margin-top: 2.5rem;
+        background-color: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.5rem;
+    }
+     @media (min-width: 768px) {
+        .summary-footer {
+            flex-direction: row;
+            justify-content: space-between;
+        }
+    }
+    .total-amount {
+        text-align: center;
+    }
+    .total-label {
+        display: block;
+        font-size: 1rem;
+        color: #4b5563;
+    }
+    .total-price {
+        display: block;
+        font-size: 2rem;
+        font-weight: 800;
+        color: #2E7D32; /* رنگ اصلی برند */
+    }
+    .btn-pay {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        background-color: #2E7D32;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.8rem 2rem;
+        font-size: 1.1rem;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(46, 125, 50, 0.2);
+    }
+    .btn-pay:hover {
+        background-color: #1b5e20;
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(46, 125, 50, 0.3);
+    }
+</style>
+{% endblock styles %}

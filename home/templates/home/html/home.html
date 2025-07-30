@@ -4,22 +4,39 @@
 {% block title %}خانه - فروشگاه محصولات طبیعی{% endblock %}
 
 {% block content %}
+<section class="hero-section">
+    <div class="hero-overlay"></div>
+    <div class="container hero-content">
+        <h1 class="hero-title">طبیعت، در دستان شما</h1>
+        <p class="hero-subtitle">ما معتقدیم بهترین کیفیت از دل طبیعت می‌آید. محصولات ما با عشق و احترام به زمین تولید شده‌اند.</p>
+        <a href="#" class="btn btn-hero">مشاهده همه محصولات</a> {# لینک به صفحه لیست محصولات #}
+    </div>
+</section>
+
 <section class="featured-products">
     <div class="container">
-        <h2 class="section-title">محصولات ویژه</h2>
+        <div class="section-header">
+            <h2 class="section-title">محصولات ویژه ما</h2>
+            <p class="section-description">گلچینی از محبوب‌ترین و باکیفیت‌ترین محصولات فروشگاه</p>
+        </div>
+        
         <div class="product-grid">
             {% for product in products %}
             <div class="product-card">
-                <a href="{% url 'home:product' product.id %}" class="card-image-wrapper">
-                    {% if product.images.first %}
-                        <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}">
-                    {% else %}
-                        <img src="https://via.placeholder.com/300x200.png?text=محصول" alt="{{ product.name }}">
-                    {% endif %}
+                <a href="{% url 'home:product' product.id %}" class="card-image-link">
+                    <div class="card-image-wrapper">
+                        {% if product.images.first %}
+                            <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}">
+                        {% else %}
+                            <img src="https://via.placeholder.com/350x350.png?text=محصول" alt="{{ product.name }}">
+                        {% endif %}
+                    </div>
                 </a>
                 <div class="card-content">
-                    <h3>{{ product.name }}</h3>
-                    <p class="price">{{ product.price|floatformat:0 }} تومان</p>
+                    <div class="card-text">
+                        <h3><a href="{% url 'home:product' product.id %}">{{ product.name }}</a></h3>
+                        <p class="price">{{ product.price|floatformat:0 }} تومان</p>
+                    </div>
                     <div class="card-actions">
                         <a href="{% url 'home:product' product.id %}" class="btn btn-primary">مشاهده جزئیات</a>
                     </div>
@@ -31,34 +48,101 @@
 </section>
 {% endblock %}
 
-{% block style %}
+{% block styles %}
 <style>
     /* ========================================= */
-    /* پس‌زمینه گرادیانت برای افکت شیشه‌ای      */
+    /* استایل کلی */
     /* ========================================= */
     body {
-        background: linear-gradient(120deg, #6a85b6 0%, #bac8e0 100%);
-        background-attachment: fixed;
+        background-color: #f9fafb; /* همان پس‌زمینه خنثی و روشن */
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
-    .featured-products {
-        padding-top: 3rem;
-        padding-bottom: 3rem;
-    }
-
+    
     /* ========================================= */
-    /* عنوان بخش                      */
+    /* بخش Hero (بخش اصلی بالای صفحه) */
     /* ========================================= */
-    .section-title {
+    .hero-section {
+        position: relative;
+        height: 70vh; /* ارتفاع بخش هیرو */
+        display: flex;
+        align-items: center;
+        justify-content: center;
         text-align: center;
-        font-size: 2.8rem;
-        font-weight: 700;
-        color: #ffffff;
-        text-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        margin-bottom: 3rem;
+        color: white;
+        /* تصویر پس‌زمینه را اینجا قرار دهید */
+        background: url('https://images.unsplash.com/photo-1490818387583-1b48b9093c2b?q=80&w=2070&auto=format&fit=crop') no-repeat center center/cover;
+    }
+
+    .hero-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5); /* لایه تیره برای خوانایی بهتر متن */
+    }
+
+    .hero-content {
+        position: relative; /* برای قرار گرفتن روی لایه overlay */
+        z-index: 2;
+    }
+
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 800;
+        text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    .hero-subtitle {
+        font-size: 1.3rem;
+        max-width: 600px;
+        margin: 1rem auto 2rem;
+        line-height: 1.6;
+    }
+
+    .btn-hero {
+        background-color: #2E7D32;
+        color: white;
+        padding: 0.8rem 2.5rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 50px; /* دکمه کپسولی */
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .btn-hero:hover {
+        background-color: #1b5e20;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 15px rgba(0,0,0,0.2);
     }
 
     /* ========================================= */
-    /* چیدمان گرید محصولات            */
+    /* بخش محصولات ویژه */
+    /* ========================================= */
+    .featured-products {
+        padding: 5rem 0;
+    }
+    
+    .section-header {
+        text-align: center;
+        margin-bottom: 4rem;
+    }
+
+    .section-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #1a253c;
+        margin-bottom: 0.5rem;
+    }
+    
+    .section-description {
+        font-size: 1.1rem;
+        color: #6c757d;
+    }
+
+    /* ========================================= */
+    /* گرید و کارت محصول (استایل یکسان با صفحه قبل) */
     /* ========================================= */
     .product-grid {
         display: grid;
@@ -66,76 +150,103 @@
         gap: 2rem;
     }
 
-    /* ========================================= */
-    /* استایل شیشه‌ای کارت محصول       */
-    /* ========================================= */
     .product-card {
-        background: rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(15px);
-        -webkit-backdrop-filter: blur(15px);
-        border: 1px solid rgba(255, 255, 255, 0.25);
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
         border-radius: 16px;
-        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
         display: flex;
         flex-direction: column;
         overflow: hidden;
         transition: transform 0.3s ease, box-shadow 0.3s ease;
-        text-decoration: none; /* برای حذف خط زیر لینک کارت */
     }
+
     .product-card:hover {
         transform: translateY(-8px);
-        box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.25);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.08);
     }
     
+    .card-image-link {
+        display: block;
+    }
+
     .card-image-wrapper {
         width: 100%;
-        height: 200px;
-        display: block; /* برای اینکه لینک به درستی کار کند */
+        height: 250px;
+        overflow: hidden;
     }
+
     .card-image-wrapper img {
         width: 100%;
         height: 100%;
         object-fit: cover;
+        transition: transform 0.3s ease;
     }
-
+    
+    .product-card:hover .card-image-wrapper img {
+        transform: scale(1.05);
+    }
+    
     .card-content {
-        padding: 1.25rem;
+        padding: 1.5rem;
         display: flex;
         flex-direction: column;
         flex-grow: 1;
     }
-    .card-content h3 {
-        font-size: 1.15rem;
-        font-weight: 700;
-        color: #1a253c;
-        margin-top: 0;
-        margin-bottom: 0.75rem;
+
+    .card-text {
         flex-grow: 1;
     }
-    .card-content .price {
-        font-size: 1.2rem;
+
+    .card-content h3 {
+        font-size: 1.25rem;
         font-weight: 700;
-        color: #004d40;
-        margin-bottom: 1.25rem;
+        color: #1a253c;
+        margin-bottom: 0.5rem;
+        min-height: 2.5em;
     }
-    .card-actions {
-        margin-top: auto; /* دکمه را به پایین کارت می‌چسباند */
-    }
-    .card-actions .btn {
-        display: block; /* دکمه تمام عرض را می‌گیرد */
-        background: linear-gradient(45deg, #2E7D32, #1b4d1e);
-        color: white;
-        border: none;
+
+    .card-content h3 a {
         text-decoration: none;
-        padding: 0.6rem 1rem;
-        border-radius: 8px;
-        text-align: center;
-        font-weight: 500;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        color: inherit;
+        transition: color 0.2s;
     }
-    .card-actions .btn:hover {
+     .card-content h3 a:hover {
+        color: #2E7D32;
+    }
+
+    .card-content .price {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #2E7D32;
+        margin-bottom: 1.5rem;
+    }
+
+    .card-actions {
+        margin-top: auto;
+    }
+    
+    .card-actions .btn {
+        display: inline-block;
+        width: 100%;
+        text-align: center;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        border: 2px solid transparent;
+        cursor: pointer;
+    }
+
+    .card-actions .btn-primary {
+        background-color: #2E7D32;
+        color: white;
+    }
+
+    .card-actions .btn-primary:hover {
+        background-color: #1b5e20;
         transform: scale(1.05);
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     }
 </style>
-{% endblock style %}
+{% endblock styles %}

@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}لیست محصولات{% endblock %}
+{% block title %}لیست محصولات مدرن{% endblock %}
 
 {% block content %}
 <div class="container page-container">
@@ -10,21 +10,32 @@
 
     <div class="product-grid">
         {% for product in products %}
-            {# کارت محصول مثل قبل بدون تغییر باقی می‌ماند #}
             <div class="product-card">
-                <div class="card-image-wrapper">
-                    {% if product.images.first %}
-                        <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}">
-                    {% else %}
-                        <img src="https://via.placeholder.com/300x200.png?text=محصول" alt="{{ product.name }}">
-                    {% endif %}
-                </div>
+                <a href="{% url "home:product" product.id %}" class="card-image-link">
+                    <div class="card-image-wrapper">
+                        {% if product.images.first %}
+                            <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}">
+                        {% else %}
+                            <img src="https://via.placeholder.com/350x350.png?text=محصول" alt="{{ product.name }}">
+                        {% endif %}
+                    </div>
+                </a>
                 <div class="card-content">
-                    <h3>{{ product.name }}</h3>
-                    <p class="price">{{ product.final_price|floatformat:0 }} تومان</p>
-                    <a href="{% url "home:product" product.id %}" class="btn btn-secondary">
-                        مشاهده جزئیات
-                    </a>
+                    <div class="card-text">
+                        <h3><a href="{% url "home:product" product.id %}">{{ product.name }}</a></h3>
+                        <p class="price">{{ product.final_price|floatformat:0 }} تومان</p>
+                    </div>
+                    <div class="card-actions">
+                        <a href="{% url "home:product" product.id %}" class="btn btn-outline">
+                            جزئیات
+                        </a>
+                        <form action="{% url "order:cart_add" product.id %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-shopping-cart"></i>
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
         {% empty %}
@@ -35,7 +46,6 @@
     {% if is_paginated %}
         <nav aria-label="Page navigation" class="mt-5 d-flex justify-content-center">
             <ul class="pagination">
-                {# دکمه صفحه قبل #}
                 {% if page_obj.has_previous %}
                     <li class="page-item">
                         <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
@@ -48,7 +58,6 @@
                     </li>
                 {% endif %}
 
-                {# شماره صفحات #}
                 {% for num in page_obj.paginator.page_range %}
                     {% if page_obj.number == num %}
                         <li class="page-item active" aria-current="page">
@@ -61,7 +70,6 @@
                     {% endif %}
                 {% endfor %}
 
-                {# دکمه صفحه بعد #}
                 {% if page_obj.has_next %}
                     <li class="page-item">
                         <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
@@ -76,140 +84,200 @@
             </ul>
         </nav>
     {% endif %}
-    </div>
+</div>
 {% endblock %}
+
 {% block styles %}
 <style>
     /* ========================================= */
-    /* پس‌زمینه گرادیانت برای افکت شیشه‌ای      */
+    /* استایل کلی و پس‌زمینه */
     /* ========================================= */
     body {
-        /* این پس‌زمینه برای دیده شدن افکت شیشه ضروری است */
-        background: linear-gradient(120deg, #1dbda7ff 0%, #bac8e0 100%);
-        background-attachment: fixed;
+        background-color: #f9fafb; /* یک پس‌زمینه بسیار روشن و خنثی */
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; /* فونت مدرن و استاندارد */
     }
+
     .page-container {
-        padding-top: 3rem;
-        padding-bottom: 3rem;
+        padding-top: 4rem;
+        padding-bottom: 4rem;
     }
 
     /* ========================================= */
-    /* عناوین بالای صفحه              */
+    /* عناوین صفحه */
     /* ========================================= */
     .page-title {
         text-align: center;
-        font-size: 2.8rem;
-        font-weight: 700;
-        color: #ffffff; /* رنگ سفید برای خوانایی روی پس‌زمینه تیره */
-        text-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        margin-bottom: 0.5rem;
+        font-size: 3rem;
+        font-weight: 800;
+        color: #1a253c; /* رنگ تیره و خوانا */
+        margin-bottom: 0.75rem;
     }
+
     .page-subtitle {
         text-align: center;
-        color: #e0e0e0; /* رنگ سفید ملایم */
+        color: #6c757d; /* خاکستری برای متن ثانویه */
         margin-bottom: 4rem;
-        font-size: 1.1rem;
+        font-size: 1.2rem;
     }
 
     /* ========================================= */
-    /* چیدمان گرید محصولات            */
+    /* گرید محصولات */
     /* ========================================= */
     .product-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 2rem;
+        gap: 2rem; /* فاصله بیشتر برای ظاهری خلوت‌تر */
     }
 
     /* ========================================= */
-    /* استایل شیشه‌ای کارت محصول       */
+    /* کارت محصول - طراحی جدید */
     /* ========================================= */
     .product-card {
-        /* بخش اصلی افکت شیشه */
-        background: rgba(7, 161, 76, 0.48);
-        backdrop-filter: blur(15px);
-        -webkit-backdrop-filter: blur(15px);
-        border: 1px solid rgba(255, 255, 255, 0.25);
-        
-        border-radius: 16px;
-        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        background: #ffffff;
+        border: 1px solid #e5e7eb; /* حاشیه ظریف */
+        border-radius: 16px; /* گوشه‌های گردتر */
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
         display: flex;
         flex-direction: column;
         overflow: hidden;
         transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
+
     .product-card:hover {
         transform: translateY(-8px);
-        box-shadow: 0 12px 40px 0 rgba(20, 27, 128, 0.25);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.08);
     }
     
+    .card-image-link {
+        display: block; /* برای اینکه کل ناحیه عکس قابل کلیک باشد */
+    }
+
     .card-image-wrapper {
         width: 100%;
-        height: 200px;
+        height: 250px; /* ارتفاع بیشتر برای نمایش بهتر محصول */
+        overflow: hidden;
     }
+
     .card-image-wrapper img {
         width: 100%;
         height: 100%;
         object-fit: cover;
+        transition: transform 0.3s ease;
     }
-
+    
+    .product-card:hover .card-image-wrapper img {
+        transform: scale(1.05); /* افکت زوم روی عکس هنگام هاور */
+    }
+    
     .card-content {
-        padding: 1.25rem;
+        padding: 1.5rem;
         display: flex;
         flex-direction: column;
-        flex-grow: 1;
+        flex-grow: 1; /* باعث می‌شود محتوا تمام فضای باقی‌مانده را بگیرد */
     }
+
+    .card-text {
+        flex-grow: 1; /* این بخش رشد می‌کند تا دکمه‌ها پایین بمانند */
+    }
+
     .card-content h3 {
-        font-size: 1.15rem;
+        font-size: 1.25rem;
         font-weight: 700;
-        color: #1a253c; /* رنگ تیره برای خوانایی روی پس‌زمینه روشن شیشه */
-        margin-bottom: 0.75rem;
-        flex-grow: 1;
+        color: #1a253c;
+        margin-bottom: 0.5rem;
+        min-height: 2.5em; /* فضایی برای دو خط متن رزرو می‌کند */
     }
-    .card-content .price {
-        font-size: 1.2rem;
-        font-weight: 700;
-        color: #004d40;
-        margin-bottom: 1.25rem;
-    }
-    .card-content .btn {
-        background: linear-gradient(45deg, #2E7D32, #1b4d1e);
-        color: white;
-        border: none;
+    .card-content h3 a {
         text-decoration: none;
+        color: inherit;
+    }
+     .card-content h3 a:hover {
+        color: #2E7D32;
+    }
+
+    .card-content .price {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #2E7D32; /* رنگ سبز اصلی برای قیمت */
+        margin-bottom: 1.5rem;
+    }
+
+    /* ناحیه دکمه‌ها */
+    .card-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: auto; /* کلید اصلی: این ناحیه را به پایین کارت می‌چسباند */
+    }
+    
+    .card-actions form {
+        margin: 0;
+    }
+    
+    .card-actions .btn {
         padding: 0.6rem 1rem;
         border-radius: 8px;
-        text-align: center;
-        font-weight: 500;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        border: 2px solid transparent;
+        cursor: pointer;
     }
-    .card-content .btn:hover {
+
+    /* دکمه اصلی - افزودن به سبد */
+    .card-actions .btn-primary {
+        background-color: #2E7D32;
+        color: white;
+        padding: 0.6rem; /* padding مساوی برای دکمه آیکون */
+        width: 44px; /* عرض ثابت */
+        height: 44px; /* ارتفاع ثابت */
+        font-size: 1rem;
+    }
+
+    .card-actions .btn-primary:hover {
+        background-color: #1b5e20;
         transform: scale(1.05);
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    
+    /* دکمه ثانویه - جزئیات */
+    .card-actions .btn-outline {
+        background-color: transparent;
+        color: #2E7D32;
+        border-color: #2E7D32;
+    }
+    
+    .card-actions .btn-outline:hover {
+        background-color: #2E7D32;
+        color: white;
     }
 
     /* ========================================= */
-    /* استایل صفحه‌بندی (Pagination)   */
+    /* صفحه‌بندی (Pagination) - طراحی جدید */
     /* ========================================= */
     .pagination .page-link {
-        background-color: rgba(255, 255, 255, 0.3);
-        backdrop-filter: blur(5px);
-        -webkit-backdrop-filter: blur(5px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        color: #1a253c;
+        color: #2E7D32;
+        background-color: #fff;
+        border: 1px solid #dee2e6;
         border-radius: 8px;
         margin: 0 4px;
-        box-shadow: none;
+        transition: all 0.2s ease;
     }
+
+    .pagination .page-link:hover {
+        background-color: #e9ecef;
+        border-color: #dee2e6;
+    }
+
     .pagination .page-item.active .page-link {
-        background-color: #ffffff;
-        color: #1a253c;
-        border: none;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        background-color: #2E7D32;
+        color: white;
+        border-color: #2E7D32;
     }
+
     .pagination .page-item.disabled .page-link {
-        background-color: rgba(255, 255, 255, 0.1);
-        color: rgba(255, 255, 255, 0.5);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #6c757d;
+        background-color: #e9ecef;
+        border-color: #dee2e6;
     }
 </style>
 {% endblock styles %}

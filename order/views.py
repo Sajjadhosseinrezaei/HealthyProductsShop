@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Cart, CartItem, Product, Order, OrderItem, Discount
+from .models import Cart, CartItem, Product, Order, OrderItem, Discount, PaymentCard
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
@@ -256,7 +256,61 @@ class CreateOrderView(LoginRequiredMixin, View):
 
             # خالی کردن سبد خرید
             cart.items.all().delete()
-            cart.remove_empty_cart()
+            cart.delete()
 
         messages.success(self.request, f"سفارش شماره {order.id} با موفقیت ثبت شد.")
         return redirect(reverse('order:order_detail', kwargs={'pk': order.id}))
+    
+
+
+class PaymentView(LoginRequiredMixin, View):
+    """
+    نمایش صفحه پرداخت و پردازش کد پیگیری برای سفارش
+    """
+    template_name = 'order/html/payment.html'
+
+    def get(self, request, order_id):
+        order = get_object_or_404(Order, id=order_id, user=request.user)
+        payment_card = PaymentCard.objects.filter(is_active=True).first()  # دریافت اولین کارت فعال
+        if not payment_card:
+            messages.error(request, "هیچ کارت پرداختی فعالی تنظیم نشده است.")
+            return redirect('order:order_detail', pk=order_id)
+        return render(request, self.template_name, {
+            'order': order,
+            'payment_card': payment_card,
+        })
+
+    def post(self, request, order_id):
+        order = get_object_or_404(Order, id=order_id, user=request.user)
+        payment_card = PaymentCard.objects.filter(is_active=True).first()
+        tracking_code = request.POST.get('tracking_code')
+
+        if not tracking_code:
+            messages.error(request, "لطفاً کد پیگیری را وارد کنید.")
+            return render(request, self.template_name, {
+                'order': order,
+                'payment_card': payment_card,
+            })
+
+        # لاجیک ساده برای تأیید کد پیگیری (می‌توانید با سیستم واقعی جایگزین کنید)
+        # اینجا فرض می‌کنیم کد پیگیری باید 10 رقم باشد و منحصربه‌فرد باشد
+        try:
+            tracking_code = int(tracking_code)
+            if len(str(tracking_code)) != 10:
+                messages.error(request, "کد پیگیری باید 10 رقم باشد.")
+                return render(request, self.template_name, {
+                    'order': order,
+                    'payment_card': payment_card,
+                })
+            # شبیه‌سازی تأیید (در واقعیت باید با بانک یا سیستم پرداخت چک شود)
+            order.payment_tracking_code = tracking_code
+            order.status = 'paid'
+            order.save()
+            messages.success(request, f"پرداخت سفارش شماره {order.id} با موفقیت تأیید شد.")
+            return redirect('order:order_detail', pk=order_id)
+        except ValueError:
+            messages.error(request, "کد پیگیری باید عددی باشد.")
+            return render(request, self.template_name, {
+                'order': order,
+                'payment_card': payment_card,
+            })
