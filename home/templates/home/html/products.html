@@ -1,283 +1,282 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load mptt_tags %}
 
-{% block title %}لیست محصولات مدرن{% endblock %}
+{% block title %}محصولات ما{% endblock %}
 
 {% block content %}
 <div class="container page-container">
-    <h1 class="page-title">همه محصولات ما</h1>
-    <p class="page-subtitle">بهترین‌ها را از دل طبیعت برای شما گردآوری کرده‌ایم.</p>
-
-    <div class="product-grid">
-        {% for product in products %}
-            <div class="product-card">
-                <a href="{% url "home:product" product.id %}" class="card-image-link">
-                    <div class="card-image-wrapper">
-                        {% if product.images.first %}
-                            <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}">
-                        {% else %}
-                            <img src="https://via.placeholder.com/350x350.png?text=محصول" alt="{{ product.name }}">
-                        {% endif %}
-                    </div>
-                </a>
-                <div class="card-content">
-                    <div class="card-text">
-                        <h3><a href="{% url "home:product" product.id %}">{{ product.name }}</a></h3>
-                        <p class="price">{{ product.final_price|floatformat:0 }} تومان</p>
-                    </div>
-                    <div class="card-actions">
-                        <a href="{% url "home:product" product.id %}" class="btn btn-outline">
-                            جزئیات
-                        </a>
-                        <form action="{% url "order:cart_add" product.id %}" method="post">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-shopping-cart"></i>
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        {% empty %}
-            <p class="text-center w-100">در حال حاضر محصولی برای نمایش وجود ندارد.</p>
-        {% endfor %}
+    <div class="page-header">
+        <h1 class="page-title">همه محصولات ما</h1>
+        <p class="page-subtitle">بهترین‌ها را از دل طبیعت برای شما گردآوری کرده‌ایم.</p>
     </div>
 
-    {% if is_paginated %}
-        <nav aria-label="Page navigation" class="mt-5 d-flex justify-content-center">
-            <ul class="pagination">
-                {% if page_obj.has_previous %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
-                            <span aria-hidden="true">&laquo;</span>
-                        </a>
+    <div class="page-grid">
+        <!-- ================== سایدبار فیلترها ================== -->
+        <aside class="filter-sidebar">
+            <h3 class="filter-title">دسته‌بندی‌ها</h3>
+            <ul class="category-list">
+                <li class="{% if not request.GET.category %}active{% endif %}">
+                    <a href="{% url 'home:products' %}">همه دسته‌بندی‌ها</a>
+                </li>
+                {% recursetree categories %}
+                    <li class="{% if request.GET.category == node.slug %}active{% endif %}">
+                        <a href="?category={{ node.slug }}">{{ node.name }}</a>
+                        {% if not node.is_leaf_node %}
+                            <ul class="children">
+                                {{ children }}
+                            </ul>
+                        {% endif %}
                     </li>
-                {% else %}
-                    <li class="page-item disabled">
-                        <span class="page-link">&laquo;</span>
-                    </li>
-                {% endif %}
-
-                {% for num in page_obj.paginator.page_range %}
-                    {% if page_obj.number == num %}
-                        <li class="page-item active" aria-current="page">
-                            <span class="page-link">{{ num }}</span>
-                        </li>
-                    {% else %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
-                        </li>
-                    {% endif %}
-                {% endfor %}
-
-                {% if page_obj.has_next %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
-                            <span aria-hidden="true">&raquo;</span>
-                        </a>
-                    </li>
-                {% else %}
-                    <li class="page-item disabled">
-                        <span class="page-link">&raquo;</span>
-                    </li>
-                {% endif %}
+                {% endrecursetree %}
             </ul>
-        </nav>
-    {% endif %}
+        </aside>
+
+        <!-- ================== محتوای محصولات ================== -->
+        <main class="product-content-area">
+            <div class="product-grid">
+                {% for product in products %}
+                    <div class="product-card">
+                        <a href="{% url 'home:product' product.id %}" class="card-image-link">
+                            <div class="card-image-wrapper">
+                                {% if product.images.first %}
+                                    <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}">
+                                {% else %}
+                                    <img src="https://via.placeholder.com/350x350.png?text=محصول" alt="{{ product.name }}">
+                                {% endif %}
+                            </div>
+                        </a>
+                        <div class="card-content">
+                            <div class="card-text">
+                                <h3><a href="{% url 'home:product' product.id %}">{{ product.name }}</a></h3>
+                                <p class="price">{{ product.final_price|floatformat:0 }} تومان</p>
+                            </div>
+                            <div class="card-actions">
+                                <a href="{% url 'home:product' product.id %}" class="btn btn-outline">
+                                    جزئیات
+                                </a>
+                                <form action="{% url 'order:cart_add' product.id %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-shopping-cart"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="no-products-found">
+                        <p>محصولی مطابق با فیلتر انتخابی شما یافت نشد.</p>
+                        <a href="{% url 'home:products' %}" class="btn-clear-filter">نمایش همه محصولات</a>
+                    </div>
+                {% endfor %}
+            </div>
+
+            {% if is_paginated %}
+                <nav aria-label="Page navigation" class="pagination-wrapper">
+                    <ul class="pagination">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}" aria-label="Previous">
+                                    <span>&laquo;</span>
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">&laquo;</span>
+                            </li>
+                        {% endif %}
+
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <li class="page-item active" aria-current="page">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% else %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}" aria-label="Next">
+                                    <span>&raquo;</span>
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">&raquo;</span>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        </main>
+    </div>
 </div>
 {% endblock %}
 
 {% block styles %}
 <style>
     /* ========================================= */
-    /* استایل کلی و پس‌زمینه */
+    /* استایل‌های کلی و پایه */
     /* ========================================= */
     body {
-        background-color: #f9fafb; /* یک پس‌زمینه بسیار روشن و خنثی */
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; /* فونت مدرن و استاندارد */
+        background-color: #f9fafb;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
-
     .page-container {
         padding-top: 4rem;
         padding-bottom: 4rem;
     }
-
-    /* ========================================= */
-    /* عناوین صفحه */
-    /* ========================================= */
-    .page-title {
+    .page-header {
         text-align: center;
+        margin-bottom: 3rem;
+    }
+    .page-title {
         font-size: 3rem;
         font-weight: 800;
-        color: #1a253c; /* رنگ تیره و خوانا */
+        color: #1a253c;
         margin-bottom: 0.75rem;
     }
-
     .page-subtitle {
-        text-align: center;
-        color: #6c757d; /* خاکستری برای متن ثانویه */
-        margin-bottom: 4rem;
+        color: #6c757d;
         font-size: 1.2rem;
     }
 
     /* ========================================= */
-    /* گرید محصولات */
+    /* چیدمان اصلی صفحه (سایدبار + محتوا) */
+    /* ========================================= */
+    .page-grid {
+        display: grid;
+        grid-template-columns: 1fr; /* تک ستونی در موبایل */
+        gap: 2rem;
+    }
+    @media (min-width: 992px) {
+        .page-grid {
+            grid-template-columns: 280px 1fr; /* دو ستونی در دسکتاپ */
+        }
+    }
+
+    /* ========================================= */
+    /* سایدبار فیلترها */
+    /* ========================================= */
+    .filter-sidebar {
+        background-color: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 1.5rem;
+        height: fit-content; /* ارتفاع متناسب با محتوا */
+    }
+    .filter-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1a253c;
+        padding-bottom: 1rem;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    .category-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    .category-list li a {
+        display: block;
+        padding: 0.75rem 1rem;
+        color: #374151;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: background-color 0.2s ease, color 0.2s ease;
+    }
+    .category-list li a:hover {
+        background-color: #f3f4f6;
+        color: #111827;
+    }
+    .category-list li.active > a {
+        background-color: #e8f5e9; /* پس‌زمینه سبز روشن برای آیتم فعال */
+        color: #2E7D32;
+        font-weight: 700;
+    }
+    /* استایل برای زیرشاخه‌ها */
+    .category-list ul.children {
+        list-style: none;
+        padding-right: 1.5rem; /* تورفتگی برای نمایش سلسله‌مراتب */
+        margin-top: 0.5rem;
+    }
+
+    /* ========================================= */
+    /* بخش اصلی محتوا و محصولات */
     /* ========================================= */
     .product-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 2rem; /* فاصله بیشتر برای ظاهری خلوت‌تر */
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 2rem;
     }
 
-    /* ========================================= */
-    /* کارت محصول - طراحی جدید */
-    /* ========================================= */
-    .product-card {
-        background: #ffffff;
-        border: 1px solid #e5e7eb; /* حاشیه ظریف */
-        border-radius: 16px; /* گوشه‌های گردتر */
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .product-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.08);
-    }
+    /* استایل کارت محصول (بدون تغییر) */
+    .product-card { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.04); display: flex; flex-direction: column; overflow: hidden; transition: transform 0.3s ease, box-shadow 0.3s ease; }
+    .product-card:hover { transform: translateY(-8px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.08); }
+    .card-image-link { display: block; }
+    .card-image-wrapper { width: 100%; height: 250px; overflow: hidden; }
+    .card-image-wrapper img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease; }
+    .product-card:hover .card-image-wrapper img { transform: scale(1.05); }
+    .card-content { padding: 1.5rem; display: flex; flex-direction: column; flex-grow: 1; }
+    .card-text { flex-grow: 1; }
+    .card-content h3 { font-size: 1.25rem; font-weight: 700; color: #1a253c; margin-bottom: 0.5rem; min-height: 2.5em; }
+    .card-content h3 a { text-decoration: none; color: inherit; }
+    .card-content h3 a:hover { color: #2E7D32; }
+    .card-content .price { font-size: 1.3rem; font-weight: 700; color: #2E7D32; margin-bottom: 1.5rem; }
+    .card-actions { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
+    .card-actions form { margin: 0; }
+    .card-actions .btn { padding: 0.6rem 1rem; border-radius: 8px; font-weight: 600; text-decoration: none; transition: all 0.2s ease; border: 2px solid transparent; cursor: pointer; }
+    .card-actions .btn-primary { background-color: #2E7D32; color: white; padding: 0.6rem; width: 44px; height: 44px; font-size: 1rem; }
+    .card-actions .btn-primary:hover { background-color: #1b5e20; transform: scale(1.05); }
+    .card-actions .btn-outline { background-color: transparent; color: #2E7D32; border-color: #2E7D32; }
+    .card-actions .btn-outline:hover { background-color: #2E7D32; color: white; }
     
-    .card-image-link {
-        display: block; /* برای اینکه کل ناحیه عکس قابل کلیک باشد */
+    /* پیام "محصولی یافت نشد" */
+    .no-products-found {
+        grid-column: 1 / -1; /* تمام عرض گرید را اشغال کند */
+        text-align: center;
+        padding: 4rem 2rem;
+        background-color: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
     }
-
-    .card-image-wrapper {
-        width: 100%;
-        height: 250px; /* ارتفاع بیشتر برای نمایش بهتر محصول */
-        overflow: hidden;
-    }
-
-    .card-image-wrapper img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.3s ease;
-    }
-    
-    .product-card:hover .card-image-wrapper img {
-        transform: scale(1.05); /* افکت زوم روی عکس هنگام هاور */
-    }
-    
-    .card-content {
-        padding: 1.5rem;
-        display: flex;
-        flex-direction: column;
-        flex-grow: 1; /* باعث می‌شود محتوا تمام فضای باقی‌مانده را بگیرد */
-    }
-
-    .card-text {
-        flex-grow: 1; /* این بخش رشد می‌کند تا دکمه‌ها پایین بمانند */
-    }
-
-    .card-content h3 {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: #1a253c;
-        margin-bottom: 0.5rem;
-        min-height: 2.5em; /* فضایی برای دو خط متن رزرو می‌کند */
-    }
-    .card-content h3 a {
-        text-decoration: none;
-        color: inherit;
-    }
-     .card-content h3 a:hover {
-        color: #2E7D32;
-    }
-
-    .card-content .price {
-        font-size: 1.3rem;
-        font-weight: 700;
-        color: #2E7D32; /* رنگ سبز اصلی برای قیمت */
+    .no-products-found p {
+        font-size: 1.2rem;
+        color: #4b5563;
         margin-bottom: 1.5rem;
     }
-
-    /* ناحیه دکمه‌ها */
-    .card-actions {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: auto; /* کلید اصلی: این ناحیه را به پایین کارت می‌چسباند */
-    }
-    
-    .card-actions form {
-        margin: 0;
-    }
-    
-    .card-actions .btn {
-        padding: 0.6rem 1rem;
+    .btn-clear-filter {
+        background-color: #2E7D32;
+        color: white;
+        padding: 0.75rem 1.5rem;
         border-radius: 8px;
-        font-weight: 600;
         text-decoration: none;
-        transition: all 0.2s ease;
-        border: 2px solid transparent;
-        cursor: pointer;
+        font-weight: 600;
+        transition: background-color 0.2s ease;
     }
-
-    /* دکمه اصلی - افزودن به سبد */
-    .card-actions .btn-primary {
-        background-color: #2E7D32;
-        color: white;
-        padding: 0.6rem; /* padding مساوی برای دکمه آیکون */
-        width: 44px; /* عرض ثابت */
-        height: 44px; /* ارتفاع ثابت */
-        font-size: 1rem;
-    }
-
-    .card-actions .btn-primary:hover {
+    .btn-clear-filter:hover {
         background-color: #1b5e20;
-        transform: scale(1.05);
-    }
-    
-    /* دکمه ثانویه - جزئیات */
-    .card-actions .btn-outline {
-        background-color: transparent;
-        color: #2E7D32;
-        border-color: #2E7D32;
-    }
-    
-    .card-actions .btn-outline:hover {
-        background-color: #2E7D32;
-        color: white;
     }
 
     /* ========================================= */
-    /* صفحه‌بندی (Pagination) - طراحی جدید */
+    /* صفحه‌بندی (Pagination) */
     /* ========================================= */
-    .pagination .page-link {
-        color: #2E7D32;
-        background-color: #fff;
-        border: 1px solid #dee2e6;
-        border-radius: 8px;
-        margin: 0 4px;
-        transition: all 0.2s ease;
+    .pagination-wrapper {
+        margin-top: 3rem;
+        display: flex;
+        justify-content: center;
     }
-
-    .pagination .page-link:hover {
-        background-color: #e9ecef;
-        border-color: #dee2e6;
-    }
-
-    .pagination .page-item.active .page-link {
-        background-color: #2E7D32;
-        color: white;
-        border-color: #2E7D32;
-    }
-
-    .pagination .page-item.disabled .page-link {
-        color: #6c757d;
-        background-color: #e9ecef;
-        border-color: #dee2e6;
-    }
+    .pagination { list-style: none; display: flex; padding: 0; gap: 0.5rem; }
+    .pagination .page-link { display: block; color: #2E7D32; background-color: #fff; border: 1px solid #dee2e6; border-radius: 8px; transition: all 0.2s ease; padding: 0.6rem 1rem; text-decoration: none; }
+    .pagination .page-link:hover { background-color: #e9ecef; border-color: #dee2e6; }
+    .pagination .page-item.active .page-link { background-color: #2E7D32; color: white; border-color: #2E7D32; }
+    .pagination .page-item.disabled .page-link { color: #6c757d; background-color: #e9ecef; border-color: #dee2e6; cursor: not-allowed; }
 </style>
 {% endblock styles %}

@@ -1,5 +1,6 @@
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
+from django.utils.text import slugify
 
 
 class Category(MPTTModel):
@@ -20,6 +21,11 @@ class Category(MPTTModel):
 
     def __str__(self):
         return self.name
+    
+    def save(self, *args, **kwargs):
+        if not self.slug:  # اگر slug خالی باشد
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
 
 class Product(models.Model):
     """

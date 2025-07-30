@@ -17,19 +17,26 @@ class HomeView(View):
 
 class ProductListView(ListView):
     """
-    نمایش لیست محصولات با استفاده از ListView برای خوانایی و کارایی بهتر.
+    نمایش لیست محصولات با امکان فیلتر بر اساس دسته‌بندی
     """
-    model = Product  # ۱. مشخص کردن مدل
-    template_name = 'home/html/products.html'  # ۲. مشخص کردن تمپلیت
-    context_object_name = 'products'  # ۳. تغییر نام object_list به products در تمپلیت
-    paginate_by = 10  # ۴. تعداد محصولات در هر صفحه
+    model = Product
+    template_name = 'home/html/products.html'
+    context_object_name = 'products'
+    paginate_by = 10  # تعداد محصولات در هر صفحه
 
     def get_queryset(self):
-        """
-        کدها را طوری بازنویسی می‌کنیم که فقط محصولات فعال نمایش داده شوند.
-        """
-        return Product.objects.filter(status='active').order_by('-created_at')
+        queryset = super().get_queryset().filter(status='active')  # فقط محصولات فعال
+        category_slug = self.request.GET.get('category')
+        if category_slug:
+            category = Category.objects.filter(slug=category_slug).first()
+            if category:
+                queryset = queryset.filter(category=category)
+        return queryset
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['categories'] = Category.objects.all()  # لیست همه دسته‌بندی‌ها برای فیلتر
+        return context
 
 class DetailView(View):
 
