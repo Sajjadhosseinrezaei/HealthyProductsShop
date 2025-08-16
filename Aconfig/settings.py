@@ -88,7 +88,7 @@ WSGI_APPLICATION = 'Aconfig.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'dbshop',           # نام پایگاه داده
+        'NAME': 'shop',           # نام پایگاه داده
         'USER': 'postgres',             # نام کاربری PostgreSQL
         'PASSWORD': 'postgres',     # رمز عبور کاربر
         'HOST': 'localhost',          # هاست (معمولاً localhost برای توسعه محلی)
