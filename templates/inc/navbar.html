@@ -20,6 +20,9 @@
                 <a href="{% url "accounts:login" %}" aria-label="ورود"> <i class='fas fa-sign-in-alt'></i></a>
                
                 {% endif %}
+                {% if request.user.is_staff %}
+                <li><a href="{% url 'order:sales_report' %}">گزارش فروش</a></li>
+                {% endif %}
             </div>
         </div>
     </header>

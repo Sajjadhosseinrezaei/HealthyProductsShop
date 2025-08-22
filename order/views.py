@@ -1,13 +1,18 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Cart, CartItem, Product, Order, OrderItem, Discount, PaymentCard
 from django.views import View
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib import messages
 from django.views.generic import CreateView, ListView, DetailView, View
 from accounts.models import Address
 from django.db import transaction
 from django.utils import timezone
 from django.urls import reverse
+from django.db.models import Sum
+from django.views.generic import FormView
+from .forms import SalesReportForm
+from datetime import datetime, time
+
 # Create your views here.
 
 
@@ -314,3 +319,58 @@ class PaymentView(LoginRequiredMixin, View):
                 'order': order,
                 'payment_card': payment_card,
             })
+        
+class SalesReportView(LoginRequiredMixin, UserPassesTestMixin, FormView):
+    template_name = 'order/html/sales_report.html'
+    form_class = SalesReportForm
+
+    def test_func(self):
+        return self.request.user.is_staff
+
+    def form_valid(self, form):
+        start_date = form.cleaned_data['start_date']
+        end_date = form.cleaned_data['end_date']
+
+        # تبدیل به datetime aware
+        start = timezone.make_aware(datetime.combine(start_date, time.min))  # 00:00:00
+        end = timezone.make_aware(datetime.combine(end_date, time.max))      # 23:59:59
+
+        # لاگ برای دیباگ
+        print(f"Start: {start}, End: {end}")
+        print(f"Timezone: {timezone.get_current_timezone()}")
+
+        # فیلتر سفارش‌ها
+        orders = Order.objects.filter(
+            created_at__range=(start, end),
+            status__in=['processing', 'shipped', 'delivered']
+        ).order_by('-created_at')
+
+        # لاگ تعداد و جزئیات سفارش‌ها
+        print(f"Orders found: {orders.count()}")
+        for order in orders:
+            print(f"Order ID: {order.id}, Created: {order.created_at}, Status: {order.status}, Amount: {order.total_amount}")
+
+        # محاسبه آمار
+        total_sales = orders.aggregate(Sum('total_amount'))['total_amount__sum'] or 0
+        total_orders = orders.count()
+        total_items_sold = OrderItem.objects.filter(order__in=orders).aggregate(Sum('quantity'))['quantity__sum'] or 0
+
+        # لاگ context برای دیباگ
+        context = self.get_context_data(
+            form=form,
+            orders=orders,
+            total_sales=total_sales,
+            total_orders=total_orders,
+            total_items_sold=total_items_sold,
+        )
+        if not orders.exists():
+            context['no_data_message'] = f'هیچ سفارشی یافت نشد برای بازه {start_date} تا {end_date}.'
+        print(f"Context: {context.keys()}")  # چک کردن کلیدهای context
+
+        return self.render_to_response(context)
+
+    def get(self, request, *args, **kwargs):
+        form = self.form_class(request.GET)  # اینجا به جای self.get_form() از داده GET استفاده می‌کنیم
+        if form.is_valid():
+            return self.form_valid(form)
+        return self.render_to_response(self.get_context_data(form=form))

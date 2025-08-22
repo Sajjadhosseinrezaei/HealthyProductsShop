@@ -284,3 +284,27 @@ a:hover {
         padding: 4rem 1rem;
     }
 }
+
+@media print {
+  /* مخفی‌کردن دکمه‌ها و عناصر اضافی */
+  button, nav, footer {
+    display: none !important;
+  }
+
+  /* حذف رنگ پس‌زمینه‌ها و بهینه‌سازی رنگ برای پرینت */
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  table {
+    border: 1px solid black;
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  table th, table td {
+    border: 1px solid black;
+    padding: 5px;
+  }
+}
