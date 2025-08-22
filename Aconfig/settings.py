@@ -88,7 +88,6 @@ WSGI_APPLICATION = 'Aconfig.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-<<<<<<< HEAD
         'NAME': 'shop',           # نام پایگاه داده
         'USER': 'postgres',             # نام کاربری PostgreSQL
         'PASSWORD': 'postgres',     # رمز عبور کاربر
@@ -97,18 +96,6 @@ DATABASES = {
     }
 }
 
-=======
-        'NAME': 'shop',
-        'USER': 'postgres',
-        'PASSWORD': 'postgres',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
-}
-
-
-
->>>>>>> caf1b3cc7e7c90ba57787e653fae1b6c60ff1cd4
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
