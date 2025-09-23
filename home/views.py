@@ -16,26 +16,41 @@ class HomeView(View):
     
 
 class ProductListView(ListView):
-    """
-    نمایش لیست محصولات با امکان فیلتر بر اساس دسته‌بندی
-    """
     model = Product
     template_name = 'home/html/products.html'
     context_object_name = 'products'
-    paginate_by = 10  # تعداد محصولات در هر صفحه
+    paginate_by = 10
 
     def get_queryset(self):
-        queryset = super().get_queryset().filter(status='active')  # فقط محصولات فعال
+        queryset = super().get_queryset().filter(status='active')
         category_slug = self.request.GET.get('category')
         if category_slug:
             category = Category.objects.filter(slug=category_slug).first()
             if category:
-                queryset = queryset.filter(category=category)
+                # شامل کردن دسته انتخاب‌شده و تمام زیرشاخه‌هایش
+                descendants = category.get_descendants(include_self=True)
+                queryset = queryset.filter(category__in=descendants)
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['categories'] = Category.objects.all()  # لیست همه دسته‌بندی‌ها برای فیلتر
+        context['categories'] = Category.objects.all()
+
+        # برای نمایش وضعیت فعال/باز بودن منوی دسته‌ها
+        category_slug = self.request.GET.get('category')
+        if category_slug:
+            selected = Category.objects.filter(slug=category_slug).first()
+            if selected:
+                # لیستی از slug‌های دسته انتخاب‌شده و اجدادش برای استفاده در تمپلیت
+                ancestor_slugs = [c.slug for c in selected.get_ancestors(include_self=True)]
+            else:
+                ancestor_slugs = []
+        else:
+            selected = None
+            ancestor_slugs = []
+
+        context['selected_category'] = selected
+        context['active_category_slugs'] = ancestor_slugs
         return context
 
 class DetailView(View):

@@ -14,31 +14,29 @@
     <div class="page-grid">
         <aside class="filter-sidebar">
             <h3 class="filter-title">دسته‌بندی‌ها</h3>
-            <ul class="category-list">
-                <li class="{% if not request.GET.category %}active{% endif %}">
-                    <a href="{% url 'home:products' %}">همه دسته‌بندی‌ها</a>
-                </li>
-                {% recursetree categories %}
-                    {# به هر آیتم یک کلاس برای شناسایی در جاوا اسکریپت اضافه می‌کنیم #}
-                    <li class="{% if not node.is_leaf_node %}has-children{% endif %} {% if request.GET.category == node.slug %}active{% endif %}">
-                        
-                        {# یک والد برای چینش بهتر لینک و آیکون #}
-                        <div class="category-item-wrapper">
-                            <a href="?category={{ node.slug }}">{{ node.name }}</a>
-                            {# اگر آیتم، فرزند داشت، آیکون باز/بسته شدن را نمایش بده #}
-                            {% if not node.is_leaf_node %}
-                                <span class="toggle-icon"></span>
-                            {% endif %}
-                        </div>
-
-                        {% if not node.is_leaf_node %}
-                            <ul class="children">
-                                {{ children }}
-                            </ul>
-                        {% endif %}
+                <ul class="category-list">
+                    <li class="{% if not request.GET.category %}active{% endif %}">
+                        <a href="{% url 'home:products' %}">همه دسته‌بندی‌ها</a>
                     </li>
-                {% endrecursetree %}
-            </ul>
+                    {% recursetree categories %}
+                        {# node.slug در active_category_slugs بررسی می‌شود #}
+                        <li class="{% if not node.is_leaf_node %}has-children{% endif %} {% if node.slug in active_category_slugs %}active{% endif %}">
+                            <div class="category-item-wrapper">
+                                <a href="{% url 'home:products' %}?category={{ node.slug }}">{{ node.name }}</a>
+                                {% if not node.is_leaf_node %}
+                                    <span class="toggle-icon"></span>
+                                {% endif %}
+                            </div>
+
+                            {% if not node.is_leaf_node %}
+                                <ul class="children">
+                                    {{ children }}
+                                </ul>
+                            {% endif %}
+                        </li>
+                    {% endrecursetree %}
+                </ul>
+
         </aside>
 
         <main class="product-content-area">
