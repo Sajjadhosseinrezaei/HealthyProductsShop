@@ -27,6 +27,21 @@ class Category(MPTTModel):
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
 
+
+class Property(models.Model):
+    """
+    خواص محصول (مثل: تقویت سیستم ایمنی، انرژی‌زا، ...)
+    """
+    name = models.CharField(max_length=200, unique=True, verbose_name="نام خاصیت")
+
+    class Meta:
+        verbose_name = "خاصیت"
+        verbose_name_plural = "خواص"
+
+    def __str__(self):
+        return self.name
+    
+
 class Product(models.Model):
     """
     مدل اصلی برای تعریف یک محصول در فروشگاه.
@@ -43,7 +58,7 @@ class Product(models.Model):
     stock = models.PositiveIntegerField(default=0, verbose_name="موجودی انبار")
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='products', verbose_name="دسته‌بندی")
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active', verbose_name="وضعیت محصول")
-    
+    properties = models.ManyToManyField(Property, blank=True, related_name='products', verbose_name='خواص محصول')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ ایجاد")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="آخرین به‌روزرسانی")
     is_featured = models.BooleanField(default=False, verbose_name="محصول ویژه")
@@ -64,7 +79,12 @@ class Product(models.Model):
         if self.price is not None:
             return self.price
         return 0  # مقدار پیش‌فرض ایمن
+    def properties_list(self):
+        return ", ".join([p.name for p in self.properties.all()])
     
+    
+    properties_list.short_description = "خواص"
+
     
 class ProductImage(models.Model):
     """
